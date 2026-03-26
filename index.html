@@ -342,8 +342,6 @@ body {
   <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
   <div class="nav-tab" onclick="showPage('yoy',this)">📈 &nbsp;YoY 2026 vs 2025</div>
   <div class="nav-tab" onclick="showPage('football',this)">⚽ &nbsp;Football</div>
-  <div class="nav-tab mock-tab" title="Coming soon">🏟️ &nbsp;Pipeline & Forecast</div>
-  <div class="nav-tab mock-tab" title="Coming soon">🤝 &nbsp;Client Overview</div>
 </div>
 </div><!-- /sticky-shell -->
 
@@ -1412,7 +1410,7 @@ async function loadDashboard() {
         lollipopData.forEach((d,i)=>{
           const yPos=y.getPixelForValue(i);
           const x0=x.getPixelForValue(0);
-          const xEnd=x.getPixelForValue(d.pct);
+          const xEnd=x.getPixelForValue(Math.min(d.pct,100));
           // track (100%)
           ctx.beginPath(); ctx.moveTo(x0,yPos); ctx.lineTo(x.getPixelForValue(100),yPos);
           ctx.strokeStyle='rgba(14,33,71,0.10)'; ctx.lineWidth=4; ctx.lineCap='round'; ctx.stroke();
@@ -1424,9 +1422,10 @@ async function loadDashboard() {
           ctx.fillStyle=d.color; ctx.fill();
           ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; ctx.stroke();
           // % label
-          ctx.font='700 11px Outfit,sans-serif';
-          ctx.fillStyle=d.color; ctx.textAlign='left'; ctx.textBaseline='middle';
-          ctx.fillText(d.pct+'%', xEnd+13, yPos);
+          ctx.font='bold 11px Outfit,sans-serif';
+          ctx.textAlign='left'; ctx.textBaseline='middle';
+          ctx.fillStyle = d.pct>100 ? '#00a878' : d.color;
+          ctx.fillText(d.pct.toFixed(0)+'%', xEnd+13, yPos);
         });
         ctx.restore();
       }
@@ -1436,10 +1435,10 @@ async function loadDashboard() {
       type:'bar',
       data:{ labels:sortedPillars.map(([p])=>p), datasets:[{data:sortedPillars.map(()=>0),backgroundColor:'transparent'}] },
       plugins:[lollipopPlugin],
-      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, clip:false, layout:{padding:{right:45}},
         plugins:{legend:{display:false}, tooltip:{enabled:false}},
         scales:{
-          x:{min:0, max:125, grid:{color:gridColor}, ticks:{color:tickColor,callback:v=>v+'%'}, border:{display:false}},
+          x:{min:0, max:100, grid:{color:gridColor}, ticks:{color:tickColor,callback:v=>v+'%'}, border:{display:false}},
           y:{grid:{display:false}, ticks:{color:'rgba(14,33,71,0.7)',font:{size:11,weight:'600'}}}
         }
       }
