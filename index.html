@@ -339,8 +339,8 @@ body {
 <!-- NAV -->
 <div class="nav-bar">
   <div class="nav-tab active" onclick="showPage('overview',this)">📊 &nbsp;Team Overview</div>
-  <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
   <div class="nav-tab" onclick="showPage('yoy',this)">📈 &nbsp;YoY 2026 vs 2025</div>
+  <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
   <div class="nav-tab" onclick="showPage('football',this)">⚽ &nbsp;Football</div>
 </div>
 </div><!-- /sticky-shell -->
@@ -421,9 +421,23 @@ body {
 
 
 
-  <!-- Us card + Agency Type chart -->
-  <div style="margin-top:24px;display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:stretch">
+  <!-- Sales Activity Section — Heatmap Calendar -->
+  <div style="margin-bottom:28px">
+    <div class="sec-hd" style="margin-bottom:16px">
+      <div>
+        <div class="sec-title">Sales Activity</div>
+        <div class="sec-sub">Activity count by month · Heatmap view</div>
+      </div>
+    </div>
+    <div id="sales-activity-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
+  </div>
+
+  <!-- Us card + Us Activity + Agency Type chart -->
+  <div style="margin-top:24px;display:grid;grid-template-columns:280px auto 1fr;gap:16px;align-items:stretch">
     <div class="sc-card" id="us-card" style="min-height:0">
+      <!-- populated by JS -->
+    </div>
+    <div id="us-activity-card" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(14,33,71,0.06)">
       <!-- populated by JS -->
     </div>
     <div class="chart-card">
@@ -463,7 +477,33 @@ body {
     </div>
   </div>
 
-  <!-- Row 2: Brand detail table -->
+  <!-- Row 2: Client Concentration Risk -->
+  <div style="margin-bottom:20px">
+    <div class="chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div class="chart-card-title">Client Concentration Risk</div>
+          <div class="chart-card-sub">Revenue dependency — Top brands vs rest of portfolio</div>
+        </div>
+        <div id="concentration-summary" style="text-align:right"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Revenue Share by Brand Tier</div>
+          <div style="height:200px"><canvas id="chartConcentration"></canvas></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+        <div id="concentration-detail" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="background:linear-gradient(135deg,rgba(0,164,120,0.06),rgba(0,180,230,0.06));border:1px solid rgba(0,164,120,0.25);border-left:3px solid #00a878;border-radius:8px;padding:11px 14px">
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#00a878;margin-bottom:6px">🔍 Key Highlight</div>
+          <div style="font-size:14px;color:var(--navy);line-height:1.6;font-weight:500">Revenue มีการกระจุกตัวสูง โดย BYD คิดเป็น 35% และ Top 3 รวม 53% ของรายได้ทั้งหมด ส่งผลให้มี client concentration risk แม้อยู่ในระดับ moderate ขณะเดียวกัน portfolio ยังขาด mid-tier clients ที่แข็งแรง ซึ่งเป็นโอกาสสำคัญในการเติบโตและลดความเสี่ยงในระยะยาว</div>
+        </div>
+      </div></div>
+      </div>
+    </div>
+  
+
+  <!-- Row 3: Brand detail table -->
   <div class="sec-hd">
     <div class="sec-title">Brand Detail</div>
     <div class="sec-sub">Sorted by YTD Revenue · All Pillars</div>
@@ -485,7 +525,10 @@ body {
     </table>
   </div>
 
+
 </div>
+
+
 
 <!-- FOOTER -->
 <div class="footer">
@@ -506,7 +549,9 @@ body {
     <div class="chart-card">
       <div class="chart-card-title">Revenue by Pillar · 2024 vs 2025 vs 2026</div>
       <div class="chart-card-sub">All pillars · grouped by year · THB</div>
-      <div class="chart-wrap" style="height:320px"><canvas id="chartYoYPillar"></canvas></div>
+      <div style="margin-top:12px">
+        <div class="chart-wrap" style="height:240px"><canvas id="chartYoYPillar"></canvas></div>
+      </div>
     </div>
   </div>
 
@@ -542,7 +587,7 @@ body {
       <div class="chart-card-title">Package Inventory · FY25/26</div>
       <div class="chart-card-sub">Available vs Sold by Package Type · THB</div>
       <div style="height:240px;margin-top:12px"><canvas id="chartFbInventory25"></canvas></div>
-      <div id="fb-dot-grid-25" style="margin-top:12px"></div>
+      <div id="fb-dot-grid-25" style="margin-top:12px;max-height:320px;overflow-y:auto"></div>
       <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-weight:600">
         <span id="fb-inv-legend-25" style="font-size:11px;font-weight:600">● Closed Deal</span>
       <span style="color:#c97200">● Pipeline</span>
@@ -554,7 +599,7 @@ body {
       <div class="chart-card-title">Package Inventory · FY26/27</div>
       <div class="chart-card-sub">Available vs Sold by Package Type · THB</div>
       <div style="height:240px;margin-top:12px"><canvas id="chartFbInventory26"></canvas></div>
-      <div id="fb-dot-grid-26" style="margin-top:12px"></div>
+      <div id="fb-dot-grid-26" style="margin-top:12px;max-height:320px;overflow-y:auto"></div>
       <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-weight:600">
         <span id="fb-inv-legend-25" style="font-size:11px;font-weight:600">● Closed Deal</span>
       <span style="color:#c97200">● Pipeline</span>
@@ -646,6 +691,7 @@ const COL_MONTH      = 'Format Month';
 const COL_QUARTER    = 'Quarter';
 const COL_TYPE       = 'Type';
 const COL_AGENCY_TYPE = 'Agency type';
+const TAB_ACTIVITIES  = '[For DB] 2026 Sale Activities';
 const COL_MONTH_RAW  = 'Format Month';
 const SP_ROW_HEADER  = 'Target 2026';
 const PIL_ROW_HEADER = '[For DB] Target by Pillar';
@@ -811,14 +857,15 @@ async function loadDashboard() {
 
     // Fetch raw data first (largest), then targets in parallel
     if(loadMsg) loadMsg.textContent = 'Loading data...';
-    const [rawRows, spRows, pillarRows, rawRows2025, rawRows2024raw, fbTargetRows, fbActRows, fbInvRows] = await Promise.all([
+    const [rawRows, spRows, pillarRows, rawRows2025, rawRows2024raw, fbTargetRows, fbActRows, fbInvRows, actRows] = await Promise.all([
       fetchSheet(TAB_RAW),
       fetchSheet(TAB_TARGET_SP), fetchSheet(TAB_TARGET_PIL),
       fetchSheet(TAB_RAW_2025).catch(()=>[]),
       fetchSheet(TAB_RAW_2024).catch(()=>[]),
       fetchSheet(TAB_FB_TARGET).catch(()=>[]),
       fetchSheet(TAB_FB_ACT).catch(()=>[]),
-      fetchSheet(TAB_FB_INV).catch(()=>[])
+      fetchSheet(TAB_FB_INV).catch(()=>[]),
+      fetchSheet(TAB_ACTIVITIES).catch(()=>[])
     ]);
     const rawRows2024 = rawRows2024raw;
 
@@ -879,7 +926,7 @@ async function loadDashboard() {
       // totalAgencyRev for Us card
       if(typ==='Agency'){ totalAgencyRev+=rev; byAgencyPillar[pil]=(byAgencyPillar[pil]||0)+rev;
         // Agency Type breakdown
-        const agType=String(r[COL_AGENCY_TYPE]||'Other Agency').trim()||'Other Agency';
+        const agType=String(r[COL_AGENCY_TYPE]||'').trim(); if(!agType) return; // skip blank agency type
         if(mIdx>=0){ const mk=MONTHS[mIdx]; if(!byMonthAgencyType[mk]) byMonthAgencyType[mk]={}; byMonthAgencyType[mk][agType]=(byMonthAgencyType[mk][agType]||0)+rev; }
       }
     });
@@ -1081,6 +1128,262 @@ async function loadDashboard() {
 
 
     if(loadMsg) loadMsg.textContent = 'Rendering charts...';
+
+/* ── Client Concentration Risk ── */
+    (()=>{
+      const sortedBrands=Object.entries(byBrand).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+      const total=sortedBrands.reduce((s,[,v])=>s+v,0);
+      if(total===0) return;
+
+      // Tier grouping
+      let cum=0;
+      const tiers=[];
+      let t1=[],t2=[],t3=[],rest=[];
+      sortedBrands.forEach(([b,v],i)=>{
+        cum+=v;
+        const share=v/total*100;
+        if(i===0) t1.push({b,v,share});
+        else if(i<3) t2.push({b,v,share});
+        else if(i<10) t3.push({b,v,share});
+        else rest.push({b,v,share});
+      });
+
+      const top1Val=t1.reduce((s,x)=>s+x.v,0);
+      const top3Val=top1Val+t2.reduce((s,x)=>s+x.v,0);
+      const top10Val=top3Val+t3.reduce((s,x)=>s+x.v,0);
+      const restVal=total-top10Val;
+
+      const top1Pct=Math.round(top1Val/total*100);
+      const top3Pct=Math.round(top3Val/total*100);
+      const top10Pct=Math.round(top10Val/total*100);
+
+      // Risk level
+      const risk=top3Pct>=60?{label:'HIGH RISK',color:'#d63b4a'}:top3Pct>=40?{label:'MODERATE',color:'#c97200'}:{label:'HEALTHY',color:'#00a878'};
+
+      // Summary
+      const summaryEl=document.getElementById('concentration-summary');
+      if(summaryEl) summaryEl.innerHTML=`
+        <div style="font-size:11px;font-weight:700;color:${risk.color};background:${risk.color}18;padding:4px 10px;border-radius:6px;border:1px solid ${risk.color}40">${risk.label}</div>
+        <div style="font-size:9px;color:var(--ink-muted);margin-top:4px">Top 3 = ${top3Pct}% of revenue</div>`;
+
+      // Donut chart
+      killChart('chartConcentration');
+      charts['chartConcentration']=new Chart(document.getElementById('chartConcentration'),{
+        type:'doughnut',
+        data:{
+          labels:[t1[0]?.b||'#1',`#2–3 (${t2.map(x=>x.b).join(', ')})`,`#4–10 (${t3.length} brands)`,`Rest (${rest.length} brands)`],
+          datasets:[{
+            data:[top1Val/1e6, (top3Val-top1Val)/1e6, (top10Val-top3Val)/1e6, restVal/1e6],
+            backgroundColor:['#d63b4a','#c97200','#00b4e6','rgba(14,33,71,0.15)'],
+            borderWidth:2, borderColor:'#fff', hoverOffset:6
+          }]
+        },
+        options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+          plugins:{
+            legend:{position:'bottom',labels:{boxWidth:10,padding:10,color:'rgba(14,33,71,0.65)',font:{size:10}}},
+            tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed.toFixed(0)}M (${Math.round(ctx.parsed/(total/1e6)*100)}%)`}}
+          }
+        }
+      });
+
+      // Detail panel
+      const detailEl=document.getElementById('concentration-detail');
+      if(!detailEl) return;
+      const tData=[
+        {label:'#1 Brand',brands:t1,val:top1Val,pct:top1Pct,color:'#d63b4a',risk:top1Pct>=40?'⚠ Very High':top1Pct>=25?'⚡ High':'✓ OK'},
+        {label:'Top 3 Brands',brands:[...t1,...t2],val:top3Val,pct:top3Pct,color:'#c97200',risk:top3Pct>=60?'⚠ High Risk':top3Pct>=40?'⚡ Moderate':'✓ Healthy'},
+        {label:'Top 10 Brands',brands:[...t1,...t2,...t3],val:top10Val,pct:top10Pct,color:'#00b4e6',risk:''},
+        {label:'Remaining',brands:rest,val:restVal,pct:100-top10Pct,color:'rgba(14,33,71,0.3)',risk:''}
+      ];
+      detailEl.innerHTML=tData.map(t=>`
+        <div style="background:var(--bg);border-radius:6px;padding:7px 12px;border-left:3px solid ${t.color}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:10px;font-weight:700;color:var(--navy)">${t.label}</span>
+            <span style="font-size:11px;font-weight:800;color:${t.color}">${t.pct}%</span>
+          </div>
+          <div style="background:rgba(14,33,71,0.08);border-radius:3px;height:5px;overflow:hidden;margin-bottom:5px">
+            <div style="height:100%;border-radius:3px;width:${t.pct}%;background:${t.color}"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;color:var(--ink-muted)">${fmtM(t.val)}M · ${t.brands.slice(0,2).map(x=>x.b||x).join(', ')}${t.brands.length>2?` +${t.brands.length-2}`:''}${t.risk?'':''}</span>
+            ${t.risk?`<span style="font-size:9px;font-weight:700;color:${t.color}">${t.risk}</span>`:''}
+          </div>
+        </div>`).join('');
+    })();
+
+    /* ── Sales Activity — Heatmap Calendar ── */
+    (()=>{
+      const ACT_NAMES  = ['Kate','Nay','Bell'];
+      const ACT_TYPES  = ['Call&Email','Meeting w/ management','Meeting w/o management'];
+      const ACT_LABELS = {'Call&Email':'Call & Email','Meeting w/ management':'Meeting w/ mgmt','Meeting w/o management':'Meeting w/o mgmt'};
+      const ACT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const ACT_PALETTE = {
+        'Call&Email':             ['#dbeeff','#a8d4f7','#6cb8f0','#2e96e0','#1a6cb5','#0e4a8a'],
+        'Meeting w/ management':  ['#e8edf5','#bfccdf','#8faabf','#5a7fa0','#2e5a80','#0e2147'],
+        'Meeting w/o management': ['#d4f5ee','#9de4d1','#5fccb2','#2aad8f','#1a8a70','#0d6654'],
+      };
+      const ACT_TEXT = {
+        'Call&Email':             ['#1a6cb5','#1a6cb5','#0e4a8a','#fff','#fff','#fff'],
+        'Meeting w/ management':  ['#2e5a80','#2e5a80','#2e5a80','#fff','#fff','#fff'],
+        'Meeting w/o management': ['#0d6654','#0d6654','#0d6654','#fff','#fff','#fff'],
+      };
+      const ACT_ACCENT = {'Call&Email':'#2e96e0','Meeting w/ management':'#2e5a80','Meeting w/o management':'#2aad8f'};
+
+      // Aggregate: actData[name][month][type] = count
+      const actData = {};
+      ACT_NAMES.forEach(n => {
+        actData[n] = {};
+        ACT_MONTHS.forEach(m => { actData[n][m] = {}; ACT_TYPES.forEach(t => actData[n][m][t] = 0); });
+      });
+      actRows.forEach(r => {
+        const raw  = String(r['Sale Name']||'').trim();
+        const name = ACT_NAMES.find(n => raw.toLowerCase().includes(n.toLowerCase()));
+        const type = String(r['Regrouping']||'').trim();
+        const monthRaw = String(r['Month']||'').trim();
+        const mon  = ACT_MONTHS.find(m => monthRaw.toLowerCase().startsWith(m.toLowerCase()));
+        if(name && ACT_TYPES.includes(type) && mon) actData[name][mon][type]++;
+      });
+
+      // Global max per type for consistent color scale across all cards
+      const globalMax = {};
+      ACT_TYPES.forEach(t => {
+        globalMax[t] = Math.max(...ACT_NAMES.flatMap(n => ACT_MONTHS.map(m => actData[n][m][t])), 1);
+      });
+
+      const el = document.getElementById('sales-activity-cards');
+      if(!el) return;
+
+      el.innerHTML = ACT_NAMES.map(name => {
+        const typeTotals = {};
+        ACT_TYPES.forEach(t => { typeTotals[t] = ACT_MONTHS.reduce((s,m) => s + actData[name][m][t], 0); });
+        const grandTotal = ACT_TYPES.reduce((s,t) => s + typeTotals[t], 0);
+
+        // Month header row
+        const colHeaders = ACT_MONTHS.map(m =>
+          `<th style="font-size:8px;font-weight:600;color:var(--ink-muted);text-align:center;padding:0 1px 5px;width:22px">${m}</th>`
+        ).join('');
+
+        // One row per activity type
+        const rows = ACT_TYPES.map(t => {
+          const pal = ACT_PALETTE[t];
+          const txt = ACT_TEXT[t];
+          const max = globalMax[t];
+
+          const cells = ACT_MONTHS.map(m => {
+            const val = actData[name][m][t];
+            const idx = val === 0 ? -1 : Math.min(Math.floor(val / max * (pal.length - 0.01)), pal.length - 1);
+            const bg  = idx < 0 ? 'var(--bg)' : pal[idx];
+            const col = idx < 0 ? 'transparent' : txt[idx];
+            return `<td style="padding:1px">
+              <div style="background:${bg};color:${col};border-radius:4px;width:20px;height:20px;
+                          display:flex;align-items:center;justify-content:center;
+                          font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;margin:0 auto">
+                ${val || ''}
+              </div>
+            </td>`;
+          }).join('');
+
+          return `<tr>
+            <td style="padding:1px 8px 1px 0;white-space:nowrap;vertical-align:middle">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${ACT_ACCENT[t]};flex-shrink:0"></span>
+                <span style="font-size:9px;font-weight:600;color:var(--ink-mid)">${ACT_LABELS[t]}</span>
+              </div>
+            </td>
+            ${cells}
+            <td></td>
+          </tr>`;
+        }).join('');
+
+        // Monthly total row (sum all types per month)
+        const monthTotalCells = ACT_MONTHS.map(m => {
+          const total = ACT_TYPES.reduce((s,t) => s + actData[name][m][t], 0);
+          return `<td style="padding:1px;text-align:center">
+            <span style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;color:${total>0?'var(--navy)':'var(--ink-faint)'}">${total||'—'}</span>
+          </td>`;
+        }).join('');
+        const monthTotalRow = `<tr style="border-top:1px solid var(--border)">
+          <td style="padding:4px 8px 0 0;font-size:8px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.05em;vertical-align:middle">Total</td>
+          ${monthTotalCells}
+          <td></td>
+        </tr>`;
+
+        // Legend
+        const legend = ACT_TYPES.map(t => `
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;color:var(--ink-muted)">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${ACT_ACCENT[t]}"></span>
+            ${ACT_LABELS[t]}
+          </span>`).join('');
+
+        return `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;
+                      padding:14px 16px;box-shadow:0 1px 4px rgba(14,33,71,0.06)">
+            <div style="margin-bottom:10px">
+              <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:var(--navy)">${name}</div>
+            </div>
+
+            <div style="overflow-x:auto">
+              <table style="border-collapse:collapse;width:100%">
+                <thead>
+                  <tr>
+                    <th style="min-width:100px"></th>
+                    ${colHeaders}
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>${rows}${monthTotalRow}</tbody>
+              </table>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+              ${legend}
+            </div>
+          </div>`;
+      }).join('');
+
+      // ── Us Activity Heatmap ──
+      const usActEl = document.getElementById('us-activity-card');
+      if(usActEl) {
+        const usMonData = {};
+        ACT_MONTHS.forEach(m => { usMonData[m] = {}; ACT_TYPES.forEach(t => usMonData[m][t] = 0); });
+        actRows.forEach(r => {
+          const raw = String(r['Sale Name']||'').trim();
+          if(ACT_NAMES.some(n => raw.toLowerCase().includes(n.toLowerCase()))) return;
+          if(!raw.toLowerCase().includes('us') && !raw.toLowerCase().includes('pollasith')) return;
+          const type = String(r['Regrouping']||'').trim();
+          const monthRaw = String(r['Month']||'').trim();
+          const mon = ACT_MONTHS.find(m => monthRaw.toLowerCase().startsWith(m.toLowerCase()));
+          if(ACT_TYPES.includes(type) && mon) usMonData[mon][type]++;
+        });
+        const usMax = {};
+        ACT_TYPES.forEach(t => { usMax[t] = Math.max(...ACT_MONTHS.map(m => usMonData[m][t]), 1); });
+        const colHdrs = ACT_MONTHS.map(m =>
+          `<th style="font-size:8px;font-weight:600;color:var(--ink-muted);text-align:center;padding:0 1px 5px;width:22px">${m}</th>`
+        ).join('');
+        const usRows = ACT_TYPES.map(t => {
+          const pal = ACT_PALETTE[t], txt = ACT_TEXT[t], max = usMax[t];
+          const cells = ACT_MONTHS.map(m => {
+            const val = usMonData[m][t];
+            const idx = val===0 ? -1 : Math.min(Math.floor(val/max*(pal.length-0.01)), pal.length-1);
+            const bg = idx<0?'var(--bg)':pal[idx], col = idx<0?'transparent':txt[idx];
+            return `<td style="padding:1px"><div style="background:${bg};color:${col};border-radius:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;margin:0 auto">${val||''}</div></td>`;
+          }).join('');
+          return `<tr><td style="padding:1px 8px 1px 0;white-space:nowrap;vertical-align:middle"><div style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${ACT_ACCENT[t]};flex-shrink:0"></span><span style="font-size:9px;font-weight:600;color:var(--ink-mid)">${ACT_LABELS[t]}</span></div></td>${cells}<td></td></tr>`;
+        }).join('');
+        const usTotalCells = ACT_MONTHS.map(m => {
+          const tot = ACT_TYPES.reduce((s,t) => s + usMonData[m][t], 0);
+          return `<td style="padding:1px;text-align:center"><span style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;color:${tot>0?'var(--navy)':'var(--ink-faint)'}">${tot||'—'}</span></td>`;
+        }).join('');
+        const usLegend = ACT_TYPES.map(t => `<span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;color:var(--ink-muted)"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${ACT_ACCENT[t]}"></span>${ACT_LABELS[t]}</span>`).join('');
+        usActEl.innerHTML = `
+          <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:10px">Us · Activity</div>
+          <div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%">
+            <thead><tr><th style="min-width:100px"></th>${colHdrs}<th></th></tr></thead>
+            <tbody>${usRows}<tr style="border-top:1px solid var(--border)"><td style="padding:4px 8px 0 0;font-size:8px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.05em">Total</td>${usTotalCells}<td></td></tr></tbody>
+          </table></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${usLegend}</div>`;
+      }
+    })();
 
     /* ── Pillar Brand Cards ── */
     (()=>{
@@ -1600,9 +1903,10 @@ async function loadDashboard() {
       'MI Group':     '#f5cc7a',
       'Other Agency': '#fae3b0'
     };
-    const agencyTypeOrder = ['1-Impact 1','1-Impact 3','1-Impact 4','Amplifi','Group M','MI Group','Other Agency'];
+    const agencyTypeOrder = ['Amplifi','Group M','MI Group','Other Agency'];
+    const IMPACT_EXCLUDE = ['1-Impact 1','1-Impact 3','1-Impact 4'];
     const allAgTypes = [...new Set([...agencyTypeOrder, ...Object.values(byMonthAgencyType).flatMap(m=>Object.keys(m))])];
-    const agTypeOrder = [...agencyTypeOrder.filter(t=>allAgTypes.includes(t)), ...allAgTypes.filter(t=>!agencyTypeOrder.includes(t))];
+    const agTypeOrder = [...agencyTypeOrder.filter(t=>allAgTypes.includes(t)), ...allAgTypes.filter(t=>!agencyTypeOrder.includes(t)&&!IMPACT_EXCLUDE.includes(t))];
 
     const agencyTypeLabelPlugin = {
       id:'agencyTypeLabel',
@@ -1958,14 +2262,14 @@ function renderFootball(d){
     const dotEl=document.getElementById(dotId);
     if(dotEl) dotEl.innerHTML=pkgs.map(pkg=>{
       const inv=byPkg[pkg]||{sold:[],vacant:[]};
-      const dots=[
-        ...inv.sold.map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Closed" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${soldColor};margin:2px;cursor:pointer"></span>`),
-        ...(inv.pipeline||[]).map(x=>`<span title="${x.brand||x.name||x.name}: ${fmtMC(x.val)}M · Pipeline" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#c97200;margin:2px;cursor:pointer"></span>`),
-        ...inv.vacant.map(x=>`<span title="${x.name}: ${fmtMC(x.val)}M · Vacant" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:rgba(14,33,71,0.12);border:1px dashed rgba(14,33,71,0.3);margin:2px;cursor:pointer"></span>`)
-      ].join('');
       const soldC=inv.sold.length, pipeC=(inv.pipeline||[]).length, vacC=inv.vacant.length, totC=soldC+pipeC+vacC;
       const pctSold=totC>0?Math.round(soldC/totC*100):0;
-      const pctLabel=`<span style="margin-left:6px;font-size:10px;font-weight:800;color:${soldColor};background:${soldColor==='#0e2147'?'rgba(14,33,71,0.08)':'rgba(90,175,223,0.15)'};padding:1px 6px;border-radius:4px">${pctSold}%</span>`;
+      const pctLabel=`<span style="margin-left:6px;font-size:10px;font-weight:800;color:${soldColor};padding:1px 6px;border-radius:4px;background:rgba(42,157,143,0.10)">${pctSold}%</span>`;
+      const dots=[
+        ...inv.sold.map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Closed" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${soldColor};margin:2px;cursor:pointer"></span>`),
+        ...(inv.pipeline||[]).map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Pipeline" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#c97200;margin:2px;cursor:pointer"></span>`),
+        ...inv.vacant.map(x=>`<span title="${x.name}: ${fmtMC(x.val)}M · Vacant" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:rgba(14,33,71,0.12);border:1px dashed rgba(14,33,71,0.3);margin:2px;cursor:pointer"></span>`)
+      ].join('');
       return `<div style="margin-bottom:6px">
         <div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px">${pkg} <span style="color:${soldColor}">${soldC} Closed</span>${pipeC>0?` · <span style="color:#c97200">${pipeC} Pipeline</span>`:''} · <span style="color:var(--ink-muted)">${vacC} Vacant</span></div>
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">${dots}${pctLabel}</div>
