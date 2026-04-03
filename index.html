@@ -186,7 +186,10 @@ body { overflow-x:hidden;  font-family:'Manrope',sans-serif; background:var(--bg
     <div class="header-dash-title"><span class="accent">1-Sport</span> Performance 2026</div>
   </div>
   <div class="header-right" style="align-items:flex-end;flex-direction:column;gap:8px">
-    <div class="live-badge"><div class="live-dot"></div>Live · <span id="last-updated">—</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button onclick="refreshData()" id="refresh-btn" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);border-radius:20px;padding:4px 14px;font-size:11px;color:rgba(255,255,255,0.7);font-weight:600;cursor:pointer;font-family:'Manrope',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.10)'">↺ Refresh Data</button>
+      <div class="live-badge"><div class="live-dot"></div>Live · <span id="last-updated">—</span></div>
+    </div>
     <div id="header-target-line" style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:.04em;font-weight:500">—</div>
     <div style="font-size:10px;color:rgba(255,255,255,0.28);letter-spacing:.06em;font-weight:500;text-transform:uppercase">Auto-synced from Salesforce · Daily at 09:00 ICT</div>
   </div>
@@ -198,7 +201,7 @@ body { overflow-x:hidden;  font-family:'Manrope',sans-serif; background:var(--bg
   <div class="nav-tab" onclick="showPage('football',this)">⚽ &nbsp;Football Sales Revenue & Contracts</div>
   <div class="nav-tab mock-tab" title="Coming soon">📊 &nbsp;Football Revenue Overview<br><span style="padding-left:20px">(Management View)</span></div>
   <div class="nav-tab mock-tab" title="Coming soon">📦 &nbsp;Package Inventory by Pillar</div>
-  <div class="nav-tab mock-tab" title="Coming soon">🎯 &nbsp;Client Pipeline Overview</div>
+  <div class="nav-tab" onclick="showPage('pipeline',this)">🎯 &nbsp;Client Pipeline Overview</div>
 </div>
 </div>
 
@@ -315,6 +318,21 @@ body { overflow-x:hidden;  font-family:'Manrope',sans-serif; background:var(--bg
   </div>
 </div>
 
+<!-- PAGE 5: PIPELINE -->
+<div class="page" id="page-pipeline">
+  <div class="sec-hd" style="margin-bottom:20px;">
+    <div class="sec-title">Client Pipeline Overview</div>
+    <div class="sec-sub">All salesperson · Live from Google Sheets</div>
+  </div>
+  <div id="pipeline-kpi-strip" style="display:grid;gap:14px;margin-bottom:20px;"></div>
+  <div class="sec-hd" style="margin-bottom:16px;"><div class="sec-title">Pipeline Overview by Pillar</div><div class="sec-sub">All Pillars · Brands & value by status</div></div>
+  <div id="pipeline-pillar-overview" style="margin-bottom:28px;"></div>
+  <div class="sec-hd" style="margin-bottom:16px;"><div class="sec-title">Pipeline Overview by Team</div><div class="sec-sub">Comparison by status & pillar · All salesperson</div></div>
+  <div id="pipeline-overview" style="margin-bottom:20px;"></div>
+  <div id="pipeline-filters" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;box-shadow:0 1px 4px rgba(14,33,71,0.05);"></div>
+  <div id="pipeline-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;"></div>
+</div>
+
 <div class="footer">
   <div class="footer-logo">Plan<span>·B</span> Eleven Co., Ltd. · Confidential</div>
   <div>Live data · Google Sheets via Coefficient · Refreshed from Salesforce</div>
@@ -368,12 +386,14 @@ async function loadDashboard(){
   try{
     const loadMsg=document.getElementById('loading-msg');
     if(loadMsg)loadMsg.textContent='Loading data...';
-    const[rawRows,spRows,pillarRows,rawRows2025,rawRows2024,fbTargetRows,fbActRows,fbInvRows,actRows]=await Promise.all([
+    const[rawRows,spRows,pillarRows,rawRows2025,rawRows2024,fbTargetRows,fbActRows,fbInvRows,actRows,pipelineRows]=await Promise.all([
       fetchSheet(TAB_RAW),fetchSheet(TAB_TARGET_SP),fetchSheet(TAB_TARGET_PIL),
       fetchSheet(TAB_RAW_2025).catch(()=>[]),fetchSheet(TAB_RAW_2024).catch(()=>[]),
       fetchSheet(TAB_FB_TARGET).catch(()=>[]),fetchSheet(TAB_FB_ACT).catch(()=>[]),
-      fetchSheet(TAB_FB_INV).catch(()=>[]),fetchSheet(TAB_ACTIVITIES).catch(()=>[])
+      fetchSheet(TAB_FB_INV).catch(()=>[]),fetchSheet(TAB_ACTIVITIES).catch(()=>[]),
+      fetchPipeline().catch(()=>[])
     ]);
+    window._pipelineRows=pipelineRows;
     if(!rawRows.length)throw new Error('Raw data tab returned 0 rows. Check tab name: '+TAB_RAW);
     const sample=rawRows[0];
     const missing=[COL_REVENUE,COL_SALES,COL_PILLAR,COL_BRAND,COL_MONTH].filter(col=>!(col in sample));
@@ -671,14 +691,371 @@ function renderFootball(d){
   const fbFilterEl=document.getElementById('fb-contract-filter');if(fbFilterEl)fbFilterEl.addEventListener('change',e=>renderFbTimeline(e.target.value));
 }
 
+function fetchPipeline(){
+  return new Promise((resolve,reject)=>{
+    const safeCb='cbpl_'+Date.now()+'_'+Math.floor(Math.random()*99999);
+    const timeout=setTimeout(()=>{delete window[safeCb];reject(new Error('Pipeline timeout'));},20000);
+    window[safeCb]=function(response){
+      clearTimeout(timeout);delete window[safeCb];
+      if(script.parentNode)script.parentNode.removeChild(script);
+      if(response.status==='error')reject(new Error(response.errors?.[0]?.message||'Pipeline error'));
+      else resolve(parseTable(response.table));
+    };
+    const script=document.createElement('script');
+    script.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${safeCb}&sheet=${encodeURIComponent('[For DB] Sales Pipeline')}&range=A4:Z&_=${Date.now()}`;
+    script.onerror=()=>{clearTimeout(timeout);delete window[safeCb];reject(new Error('Cannot load pipeline'));};
+    document.head.appendChild(script);
+  });
+}
+
+function renderPipeline(rows, activePillars, activeStatuses, activeSPs){
+  const kpiEl    = document.getElementById('pipeline-kpi-strip');
+  const filtersEl= document.getElementById('pipeline-filters');
+  const cardsEl  = document.getElementById('pipeline-cards');
+  if(!cardsEl)return;
+
+  // ── Fixed config ──
+  const PILLARS  = ['Football','Muay Thai','Running','E-Sport','Entertainment','AG Volleyball'];
+  const PIL_EMOJI= {'Football':'⚽','Muay Thai':'🥊','Running':'🏃','E-Sport':'🎮','Entertainment':'🎤','AG Volleyball':'🏐'};
+  const STATUSES = ['close deal','proposal','meeting','follow-up','postponed'];
+  const STAT_EMOJI={'close deal':'🤝','proposal':'📋','meeting':'📅','follow-up':'🔄','postponed':'⏸️'};
+  const STAT_CFG = {
+    'close deal':{label:'CLOSE DEAL',color:'#00a878',bg:'rgba(0,168,120,0.09)',  bdr:'rgba(0,168,120,0.28)'},
+    'proposal':  {label:'PROPOSAL',  color:'#1a6cb5',bg:'rgba(26,108,181,0.07)',bdr:'rgba(26,108,181,0.22)'},
+    'meeting':   {label:'MEETING',   color:'#b36200',bg:'rgba(201,114,0,0.08)', bdr:'rgba(201,114,0,0.25)'},
+    'follow-up': {label:'FOLLOW-UP', color:'#4a5c6e',bg:'rgba(74,92,110,0.07)', bdr:'rgba(74,92,110,0.2)'},
+    'postponed': {label:'POSTPONED', color:'#b02030',bg:'rgba(214,59,74,0.07)', bdr:'rgba(214,59,74,0.22)'},
+  };
+  const PIL_COLOR = {
+    'Football':'#00b4e6','Muay Thai':'#e05c5c','Running':'#c97200',
+    'E-Sport':'#7b5ea7','Entertainment':'#d4589a','AG Volleyball':'#2aad8f',
+  };
+  const SP_ORDER = ['Kate','Nay','Bell','Us'];
+  const SP_COLOR = {Kate:'#1a3567',Nay:'#2e1a7a',Bell:'#6a1a30',Us:'#0e5c38'};
+  const SP_HDR   = {
+    Kate:'linear-gradient(135deg,#0e2147 0%,#1a3567 100%)',
+    Nay: 'linear-gradient(135deg,#1a0e47 0%,#2e1a7a 100%)',
+    Bell:'linear-gradient(135deg,#3a0e1a 0%,#6a1a30 100%)',
+    Us:  'linear-gradient(135deg,#0a2e1a 0%,#0e5c38 100%)',
+  };
+
+  // Empty set = "show all" (nothing pinned); non-empty = filter to selection
+  if(!activePillars)  activePillars  = new Set();
+  if(!activeStatuses) activeStatuses = new Set();
+  if(!activeSPs)      activeSPs      = new Set();
+
+  const visPillars  = activePillars.size  ? PILLARS.filter(p=>activePillars.has(p))  : PILLARS;
+  const visStatuses = activeStatuses.size ? STATUSES.filter(s=>activeStatuses.has(s)): STATUSES;
+  const visSPs      = activeSPs.size      ? SP_ORDER.filter(s=>activeSPs.has(s))     : SP_ORDER;
+
+  // ── Filter bar ──
+  if(filtersEl){
+    filtersEl.style.display='flex';
+    filtersEl.style.flexDirection='row';
+    filtersEl.style.flexWrap='wrap';
+    filtersEl.style.gap='6px';
+    filtersEl.style.alignItems='center';
+
+    const sep=`<div style="width:1px;height:20px;background:var(--border);flex-shrink:0;margin:0 2px"></div>`;
+
+    const mkBtns=(items, activeSet, colorFn, labelFn, group)=>items.map(item=>{
+      const on=activeSet.has(item), col=colorFn(item);
+      return`<button data-item="${item.replace(/"/g,'&quot;')}" data-group="${group}"
+        style="padding:3px 10px;border-radius:99px;font-size:10px;font-weight:600;cursor:pointer;
+        background:${on?col:'var(--surface)'};color:${on?'#fff':'var(--ink-muted)'};
+        border:1.5px solid ${on?col:'var(--border)'};transition:all .15s;white-space:nowrap;line-height:1.6">${labelFn(item)}</button>`;
+    }).join('');
+
+    const spLabel =s=>s;
+    const pilLabel=p=>`${PIL_EMOJI[p]||'📌'} ${p}`;
+    const stLabel =s=>`${STAT_EMOJI[s]||'·'} ${s.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ')}`;
+
+    filtersEl.innerHTML=
+      `<span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0">Sales</span>`+
+      mkBtns(SP_ORDER, activeSPs, s=>SP_COLOR[s]||'#0e2147', spLabel,'sp')+
+      sep+
+      `<span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0">Pillar</span>`+
+      mkBtns(PILLARS, activePillars, p=>PIL_COLOR[p]||'#aab8c8', pilLabel,'pillar')+
+      sep+
+      `<span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);flex-shrink:0">Status</span>`+
+      mkBtns(STATUSES, activeStatuses, s=>STAT_CFG[s]?.color||'#aab8c8', stLabel,'status');
+
+    filtersEl.querySelectorAll('button[data-item]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const item=btn.getAttribute('data-item'), group=btn.getAttribute('data-group');
+        const map={'pillar':activePillars,'status':activeStatuses,'sp':activeSPs};
+        const set=map[group];
+        if(set.has(item)) set.delete(item); else set.add(item);
+        renderPipeline(window._pipelineRows||[], activePillars, activeStatuses, activeSPs);
+      });
+    });
+  }
+
+  if(!rows||!rows.length){
+    cardsEl.innerHTML='<div style="text-align:center;padding:48px;color:var(--ink-muted);font-size:13px;">No pipeline data found.</div>';
+    return;
+  }
+
+  // ── Column detection ──
+  const hdrs=Object.keys(rows[0]);
+  const fc=(...kws)=>hdrs.find(h=>kws.some(k=>h.toLowerCase().includes(k.toLowerCase())));
+  const CSP  = fc('sales rep','salesperson','sale name','sales name') || hdrs[0];
+  const CBR  = fc('brand name','brand','client','account')            || hdrs[1];
+  const CPIL = fc('pillar','media type','sport')                      || hdrs[2];
+  const CSTAT= fc('contact stage','status','stage')                   || hdrs[3];
+  const CVAL = fc('final total contract value','contract value','total contract','pipeline value','total amount') || hdrs[4];
+  const CPOT = fc('potential') || null;
+
+  // ── Build data ──
+  const byPerson={};
+  SP_ORDER.forEach(sp=>{
+    byPerson[sp]={};
+    PILLARS.forEach(pil=>{byPerson[sp][pil]={};STATUSES.forEach(s=>byPerson[sp][pil][s]=[]);});
+  });
+  rows.forEach(r=>{
+    const spRaw=String(r[CSP]||'').trim(), brand=String(r[CBR]||'').trim();
+    const pil=String(r[CPIL]||'').trim(), stat=String(r[CSTAT]||'').toLowerCase().trim();
+    const val=parseFloat(String(r[CVAL]||'').replace(/,/g,''))||0;
+    const pot=CPOT?!!(r[CPOT]&&String(r[CPOT]).trim()!==''&&String(r[CPOT]).toLowerCase()!=='false'&&String(r[CPOT]).toLowerCase()!=='0'):false;
+    if(!brand||!stat)return;
+    const sp=SP_ORDER.find(s=>spRaw.toLowerCase().includes(s.toLowerCase()));if(!sp)return;
+    const mPil=PILLARS.find(p=>p.toLowerCase()===pil.toLowerCase());if(!mPil)return;
+    const mStat=STATUSES.find(s=>s===stat);if(!mStat)return;
+    byPerson[sp][mPil][mStat].push({brand,val,pot});
+  });
+
+  // ── KPI strip (unfiltered totals) ──
+  const totalDeals=rows.filter(r=>String(r[CBR]||'').trim()&&String(r[CSTAT]||'').trim()).length;
+  const totalVal  =rows.reduce((s,r)=>s+(parseFloat(String(r[CVAL]||'').replace(/,/g,''))||0),0);
+  const closedCnt =rows.filter(r=>String(r[CSTAT]||'').toLowerCase().trim()==='close deal').length;
+  const potCnt    =CPOT?rows.filter(r=>r[CPOT]&&String(r[CPOT]).trim()!==''&&String(r[CPOT]).toLowerCase()!=='false'&&String(r[CPOT]).toLowerCase()!=='0').length:0;
+  if(kpiEl){
+    kpiEl.style.gridTemplateColumns=`repeat(${potCnt>0?4:3},1fr)`;
+    kpiEl.innerHTML=
+      `<div class="kpi-card c-navy"><div class="kpi-label">Total Pipeline</div><div class="kpi-val">${totalDeals}</div><div class="kpi-sub">brands · all pillars</div></div>`+
+      `<div class="kpi-card c-cyan"><div class="kpi-label">Pipeline Value</div><div class="kpi-val">${fmtM(totalVal)}<span class="kpi-unit">M</span></div><div class="kpi-sub">THB · estimated</div></div>`+
+      `<div class="kpi-card c-green"><div class="kpi-label" style="color:var(--green)">Close Deal</div><div class="kpi-val" style="color:var(--green);font-size:28px">${closedCnt}</div><div class="kpi-sub">brands confirmed</div></div>`+
+      (potCnt>0?`<div class="kpi-card c-amber"><div class="kpi-label" style="color:var(--amber)">⭐ Potential</div><div class="kpi-val" style="color:var(--amber);font-size:28px">${potCnt}</div><div class="kpi-sub">brands flagged</div></div>`:'');
+  }
+
+  // ── Pillar Overview card (rows=status, cols=pillar) ──
+  const pilOvEl=document.getElementById('pipeline-pillar-overview');
+  if(pilOvEl){
+    // Aggregate: pillarStat[pil][stat] = {cnt, val}
+    const pilStat={};
+    PILLARS.forEach(p=>{pilStat[p]={};STATUSES.forEach(s=>{pilStat[p][s]={cnt:0,val:0};});});
+    SP_ORDER.forEach(sp=>{
+      PILLARS.forEach(p=>STATUSES.forEach(s=>{
+        const items=byPerson[sp][p][s];
+        pilStat[p][s].cnt+=items.length;
+        pilStat[p][s].val+=items.reduce((a,it)=>a+it.val,0);
+      }));
+    });
+    // Totals per pillar and per status
+    const pilTot=Object.fromEntries(PILLARS.map(p=>([p,{cnt:STATUSES.reduce((a,s)=>a+pilStat[p][s].cnt,0),val:STATUSES.reduce((a,s)=>a+pilStat[p][s].val,0)}])));
+    const statTot=Object.fromEntries(STATUSES.map(s=>([s,{cnt:PILLARS.reduce((a,p)=>a+pilStat[p][s].cnt,0),val:PILLARS.reduce((a,p)=>a+pilStat[p][s].val,0)}])));
+    const grandCnt=PILLARS.reduce((a,p)=>a+pilTot[p].cnt,0);
+    const grandVal=PILLARS.reduce((a,p)=>a+pilTot[p].val,0);
+
+    // Normalize per row (per status) across pillars
+    const rowMax=Object.fromEntries(STATUSES.map(s=>[s,Math.max(...PILLARS.map(p=>pilStat[p][s].val),1)]));
+    const totMax=Math.max(...PILLARS.map(p=>pilTot[p].val),1);
+
+    const GS=`display:grid;grid-template-columns:120px repeat(${PILLARS.length},1fr)`;
+
+    // Pillar header cells
+    const pilHdrs=PILLARS.map(p=>{
+      const hex=PIL_COLOR[p];
+      const closePct=pilTot[p].val>0?Math.round(pilStat[p]['close deal'].val/pilTot[p].val*100):0;
+      return`<div style="background:${hex};padding:10px 10px;text-align:center;border-right:1px solid rgba(255,255,255,0.15)">
+        <div style="font-size:13px;margin-bottom:2px">${PIL_EMOJI[p]}</div>
+        <div style="font-size:10px;font-weight:800;color:#fff;line-height:1.2">${p}</div>
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-top:4px;line-height:1">${pilTot[p].cnt>0?fmtM(pilTot[p].val)+'M':'—'}</div>
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.95);margin-top:2px">${pilTot[p].cnt} Brand${pilTot[p].cnt!==1?'s':''}</div>
+        <div style="margin-top:5px;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;overflow:hidden"><div style="height:100%;width:${closePct}%;background:rgba(255,255,255,0.85);border-radius:99px"></div></div><div style="font-size:8px;color:rgba(255,255,255,0.5);margin-top:2px">${closePct}% closed</div>
+      </div>`;
+    }).join('');
+
+    // Data cell
+    const dcell=(cnt,val,color,maxV)=>{
+      const pct=val>0?Math.round(val/maxV*100):0;
+      return`<div style="padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)">
+        ${cnt>0?`
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--ink-muted);font-weight:600">${cnt} Brand${cnt!==1?'s':''}</span>
+            <span style="font-size:12px;font-weight:800;color:${color}">${fmtM(val)}M</span>
+          </div>
+          <div style="height:4px;background:var(--bg);border-radius:99px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${color};border-radius:99px"></div>
+          </div>`
+        :`<div style="font-size:11px;color:var(--ink-faint);text-align:center;padding:4px 0">—</div>`}
+      </div>`;
+    };
+
+    // Status rows
+    const statRows=STATUSES.map(s=>{
+      const cfg=STAT_CFG[s];
+      const cells=PILLARS.map(p=>dcell(pilStat[p][s].cnt,pilStat[p][s].val,cfg.color,rowMax[s])).join('');
+      return`<div style="${GS}">
+        <div style="padding:8px 12px;background:${cfg.bg};border-right:1.5px solid ${cfg.bdr};border-bottom:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;gap:3px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:${cfg.color}">${STAT_EMOJI[s]} ${cfg.label}</div>
+          <div style="font-size:9px;color:${cfg.color};opacity:.75">${statTot[s].cnt} Brands · ${statTot[s].val>0?fmtM(statTot[s].val)+'M':'—'}</div>
+        </div>
+        ${cells}
+      </div>`;
+    }).join('');
+
+    // Total row
+    const totCells=PILLARS.map(p=>dcell(pilTot[p].cnt,pilTot[p].val,'var(--navy)',totMax)).join('');
+    const totRow=`<div style="${GS}">
+      <div style="padding:8px 12px;background:var(--navy);display:flex;flex-direction:column;justify-content:center;gap:3px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,0.6)">📊 TOTAL</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.45)">${grandCnt} Brands · ${fmtM(grandVal)}M</div>
+      </div>
+      ${totCells}
+    </div>`;
+
+    pilOvEl.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(14,33,71,0.07)">
+      <div style="${GS}">
+        <div style="background:var(--navy);padding:14px 14px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4)">PILLAR</div>
+          <div style="font-size:11px;font-weight:800;color:#fff;margin-top:2px">PIPELINE<br>OVERVIEW</div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1)">
+            <div style="font-size:18px;font-weight:800;color:#fff;line-height:1">${fmtM(grandVal)}M</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px">${grandCnt} Brands total</div>
+          </div>
+        </div>
+        ${pilHdrs}
+      </div>
+      ${statRows}${totRow}
+    </div>`;
+  }
+
+  // ── Overview comparison card ──
+  const overviewEl=document.getElementById('pipeline-overview');
+  if(overviewEl){
+    const spStats=SP_ORDER.map(sp=>{
+      const d=byPerson[sp];
+      const byStat=STATUSES.map(s=>({s,cnt:PILLARS.reduce((a,p)=>a+d[p][s].length,0),val:PILLARS.reduce((a,p)=>a+d[p][s].reduce((a2,it)=>a2+it.val,0),0)}));
+      const byPil =PILLARS.map(p=>({p,cnt:STATUSES.reduce((a,s)=>a+d[p][s].length,0),val:STATUSES.reduce((a,s)=>a+d[p][s].reduce((a2,it)=>a2+it.val,0),0)}));
+      const totCnt=byStat.reduce((a,x)=>a+x.cnt,0),totVal=byStat.reduce((a,x)=>a+x.val,0);
+      const potCnt=PILLARS.reduce((a,p)=>a+STATUSES.reduce((a2,s)=>a2+d[p][s].filter(it=>it.pot).length,0),0);
+      const potVal=PILLARS.reduce((a,p)=>a+STATUSES.reduce((a2,s)=>a2+d[p][s].filter(it=>it.pot).reduce((a3,it)=>a3+it.val,0),0),0);
+      return{sp,byStat,byPil,totCnt,totVal,potCnt,potVal};
+    });
+    const maxStat=Object.fromEntries(STATUSES.map(s=>[s,Math.max(...spStats.map(x=>x.byStat.find(b=>b.s===s)?.val||0),1)]));
+    const maxPil =Object.fromEntries(PILLARS.map(p=>[p,Math.max(...spStats.map(x=>x.byPil.find(b=>b.p===p)?.val||0),1)]));
+    const maxPot =Math.max(...spStats.map(x=>x.potVal),1);
+    const GS=`display:grid;grid-template-columns:140px repeat(4,1fr)`;
+    const cell=(cnt,val,color,maxV)=>{
+      const pct=val>0?Math.round(val/maxV*100):0;
+      return`<div style="padding:8px 12px;border-right:1px solid var(--border)">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:600;color:var(--ink-muted)">${cnt>0?cnt+' Brand'+(cnt>1?'s':''):'—'}</span>
+          <span style="font-size:13px;font-weight:800;color:${color}">${val>0?fmtM(val)+'M':'—'}</span>
+        </div>
+        <div style="height:5px;background:var(--bg);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:99px;transition:width .5s ease"></div>
+        </div>
+      </div>`;
+    };
+    const secHdr=lbl=>`<div style="${GS}"><div style="grid-column:1/-1;background:var(--bg);padding:5px 14px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)"><span style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">${lbl}</span></div></div>`;
+    const rowLbl=(icon,lbl,col)=>`<div style="padding:8px 14px;border-right:1.5px solid var(--border);display:flex;align-items:center;gap:6px;background:var(--surface-2)"><span>${icon}</span><span style="font-size:10px;font-weight:700;color:${col||'var(--ink-mid)'};white-space:nowrap">${lbl}</span></div>`;
+    const statRows=STATUSES.map(s=>{const cfg=STAT_CFG[s];return`<div style="${GS}">${rowLbl(STAT_EMOJI[s],cfg.label,cfg.color)}${spStats.map(x=>{const b=x.byStat.find(b=>b.s===s);return cell(b.cnt,b.val,cfg.color,maxStat[s]);}).join('')}</div>`;}).join('');
+    const pilRows =PILLARS.map(p=>{const hex=PIL_COLOR[p];return`<div style="${GS}">${rowLbl(PIL_EMOJI[p],p,hex)}${spStats.map(x=>{const b=x.byPil.find(b=>b.p===p);return cell(b.cnt,b.val,hex,maxPil[p]);}).join('')}</div>`;}).join('');
+    const potRow  =`<div style="${GS}">${rowLbl('⭐','Potential','#b38a00')}${spStats.map(x=>cell(x.potCnt,x.potVal,'#c9930a',maxPot)).join('')}</div>`;
+    const spHdrs  =spStats.map(({sp,totCnt,totVal})=>`<div style="background:${SP_HDR[sp]};padding:14px 12px;text-align:center"><div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.04em">${sp.toUpperCase()}</div><div style="font-size:26px;font-weight:800;color:#fff;line-height:1.1;margin-top:4px">${fmtM(totVal)}M</div><div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:3px">${totCnt} Brand${totCnt!==1?'s':''}</div></div>`).join('');
+    overviewEl.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(14,33,71,0.07)">
+      <div style="${GS}"><div style="background:var(--navy);padding:14px 16px;display:flex;flex-direction:column;justify-content:center"><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4)">TEAM</span><span style="font-size:11px;font-weight:800;color:#fff;margin-top:2px">PIPELINE<br>OVERVIEW</span></div>${spHdrs}</div>
+      ${secHdr('📊 By Contact Status')}${statRows}
+      ${secHdr('🏷️ By Pillar')}${pilRows}
+      ${secHdr('⭐ Potential')}${potRow}
+    </div>`;
+  }
+
+  // ── Cards ──
+  cardsEl.style.gridTemplateColumns='1fr';
+  cardsEl.style.gap='16px';
+
+  cardsEl.innerHTML=visSPs.map(sp=>{
+    const spData=byPerson[sp];
+    const totalSpDeals=visPillars.reduce((s,pil)=>s+visStatuses.reduce((s2,st)=>s2+spData[pil][st].length,0),0);
+    const spVal=visPillars.reduce((s,pil)=>s+visStatuses.reduce((s2,st)=>s2+spData[pil][st].reduce((s3,it)=>s3+it.val,0),0),0);
+    const closedSp=visPillars.reduce((s,pil)=>s+(visStatuses.includes('close deal')?spData[pil]['close deal'].length:0),0);
+    const potSp=visPillars.reduce((s,pil)=>s+visStatuses.reduce((s2,st)=>s2+spData[pil][st].filter(it=>it.pot).length,0),0);
+    const grad=SP_HDR[sp]||SP_HDR.Kate;
+
+    const cols=visPillars.map((pil,idx)=>{
+      const hex=PIL_COLOR[pil]||'#aab8c8';
+      const borderR=idx<visPillars.length-1?'border-right:1.5px solid var(--border);':'';
+      const sections=visStatuses.map(stat=>{
+        const cfg=STAT_CFG[stat], items=spData[pil][stat];
+        const totalStatVal=items.reduce((s,it)=>s+it.val,0);
+        const potItems=items.filter(it=>it.pot);
+        const statSummary=items.length>0
+          ?`<span style="margin-left:5px;font-size:10px;font-weight:700;color:${cfg.color};opacity:0.85">${items.length} Brand${items.length>1?'s':''}${totalStatVal>0?' · '+fmtM(totalStatVal)+'M':''}${potItems.length>0?' · ⭐'+potItems.length:''}</span>`:'';
+        const itemsHtml=items.length===0
+          ?`<div style="font-size:11px;color:var(--ink-faint);padding:3px 0 4px">—</div>`
+          :items.map(it=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:11px;font-weight:600;color:var(--ink);line-height:1.3;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.pot?'⭐ ':''}${it.brand}</span>
+              ${it.val>0?`<span style="flex-shrink:0;font-size:10px;font-weight:700;color:${cfg.color};background:${cfg.bg};border:1px solid ${cfg.bdr};border-radius:4px;padding:1px 6px;white-space:nowrap">${fmtM(it.val)}M</span>`:`<span style="flex-shrink:0;font-size:10px;color:var(--ink-faint)">—</span>`}
+            </div>`).join('');
+        return`<div style="margin-bottom:10px">
+          <div style="display:flex;align-items:center;margin-bottom:5px">
+            <div style="display:inline-block;font-size:8px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:${cfg.color};background:${cfg.bg};border:1px solid ${cfg.bdr};border-radius:3px;padding:2px 7px">${cfg.label}</div>
+            ${statSummary}
+          </div>${itemsHtml}</div>`;
+      }).join('');
+
+      return`<div style="flex:1;min-width:130px;${borderR}display:flex;flex-direction:column">
+        <div style="background:${hex};padding:8px 10px;text-align:center;flex-shrink:0">
+          <span style="font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${pil}</span>
+        </div>
+        <div style="padding:10px 10px;flex:1">${sections||'<div style="font-size:11px;color:var(--ink-faint);padding:8px 0;text-align:center">—</div>'}</div>
+      </div>`;
+    }).join('');
+
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(14,33,71,0.07)">
+      <div style="background:${grad};padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0">${sp[0]}</div>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#fff;letter-spacing:.03em">${sp.toUpperCase()}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+              <span style="font-size:10px;color:rgba(255,255,255,0.4)">Sales Pipeline · ${totalSpDeals} deals${spVal>0?' · '+fmtM(spVal)+'M':''}</span>
+              ${potSp>0?`<span style="font-size:9px;font-weight:700;color:#ffe066;background:rgba(255,224,0,0.15);border:1px solid rgba(255,224,0,0.3);border-radius:99px;padding:1px 8px">⭐ ${potSp} Potential</span>`:''}
+            </div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.25);margin-top:4px">⭐ = Potential</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:20px;align-items:center">
+          ${closedSp>0?`<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#00e5a0;line-height:1">${closedSp}</div><div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.1em;margin-top:2px">CLOSED</div></div>`:''}
+          <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#fff;line-height:1">${totalSpDeals}</div><div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.1em;margin-top:2px">DEALS</div></div>
+        </div>
+      </div>
+      <div style="display:flex;overflow-x:auto;border-top:2px solid rgba(0,0,0,0.10)">${cols||'<div style="padding:24px;color:var(--ink-faint);font-size:12px;text-align:center;width:100%">No data for selected filters</div>'}</div>
+    </div>`;
+  }).join('')||'<div style="text-align:center;padding:32px;color:var(--ink-muted);font-size:13px">No salesperson selected</div>';
+}
+
+function refreshData(){
+  const btn=document.getElementById('refresh-btn');
+  if(btn){btn.textContent='↻ Refreshing...';btn.disabled=true;btn.style.opacity='0.6';}
+  const ls=document.getElementById('loading-screen');if(ls)ls.style.display='none';
+  loadDashboard().then(()=>{
+    if(btn){btn.textContent='↺ Refresh Data';btn.disabled=false;btn.style.opacity='1';}
+  }).catch(()=>{
+    if(btn){btn.textContent='↺ Refresh Data';btn.disabled=false;btn.style.opacity='1';}
+  });
+}
 function showPage(name,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
   if(name==='football'){setTimeout(()=>{if(window._fbData)renderFootball(window._fbData);},80);}
+  if(name==='pipeline'){setTimeout(()=>{if(window._pipelineRows&&window._pipelineRows.length)renderPipeline(window._pipelineRows,new Set(),new Set(),new Set());},80);}
 }
-// ── Page scaling: >1200px = 100%, <1200px = scale to fit, min 960px ──
 function applyScale() {
   const DESIGN = 1200, MIN = 960;
   const vw = window.innerWidth;
