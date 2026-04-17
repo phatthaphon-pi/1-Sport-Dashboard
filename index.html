@@ -35,6 +35,8 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 .nav-tab.active{color:var(--navy);border-bottom-color:var(--cyan)}
 .nav-tab.mock-tab{color:var(--ink-faint);cursor:default;position:relative}
 .nav-tab.mock-tab::after{content:'Soon';position:absolute;top:8px;right:4px;font-size:8px;font-weight:700;background:var(--cyan-dim);color:var(--cyan);padding:1px 5px;border-radius:99px}
+.nav-tab.wip-tab{color:var(--ink-mid);cursor:pointer;position:relative}
+.nav-tab.wip-tab::after{content:'WIP';position:absolute;top:8px;right:4px;font-size:8px;font-weight:700;background:var(--amber-dim);color:var(--amber);padding:1px 5px;border-radius:99px}
 .page{display:none;padding:28px 36px 56px;animation:fadein .25s ease}
 .page.active{display:block}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -117,7 +119,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
   <div class="nav-tab" onclick="showPage('football',this)">⚽ &nbsp;Football Sales Revenue & Contracts</div>
   <div class="nav-tab" onclick="showPage('mgmt',this)">📊 &nbsp;Football Revenue Overview<br><span style="padding-left:20px">(Management View)</span></div>
-  <div class="nav-tab mock-tab">📦 &nbsp;Package Inventory by Pillar</div>
+  <div class="nav-tab wip-tab" onclick="showPage('pilinv',this)">📦 &nbsp;Package Inventory by Pillar</div>
   <div class="nav-tab" onclick="showPage('pipeline',this)">🎯 &nbsp;Client Pipeline Overview</div>
 </div>
 </div>
@@ -133,7 +135,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div class="sec-hd"><div class="sec-title">Revenue by Pillar</div><div class="sec-sub">YTD Actual vs Target</div></div>
   <div class="charts-2">
     <div class="chart-card"><div class="chart-card-title">Actual vs Target</div><div class="chart-card-sub">Horizontal bars</div><div class="chart-wrap" style="height:260px"><canvas id="chartPillarOverview"></canvas></div></div>
-    <div class="chart-card"><div class="chart-card-title">Attainment % by Pillar</div><div class="chart-card-sub">% of full-year target</div><div class="chart-wrap" style="height:260px"><canvas id="chartPillarPct"></canvas></div></div>
+    <div class="chart-card"><div class="chart-card-title">Revenue Forecast by Pillar</div><div class="chart-card-sub">Actual + Pipeline (capacity-capped) vs Target</div><div id="forecast-pillar-card" style="margin-top:12px"></div></div>
   </div>
   <div id="pillar-brand-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px"></div>
   <div class="sec-hd"><div class="sec-title">Individual Scorecards</div><div class="sec-sub">YTD Performance</div></div>
@@ -173,7 +175,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div class="sec-hd" style="margin-bottom:20px"><div class="sec-title">Football Performance</div><div class="sec-sub">FY25/26 vs FY26/27</div></div>
   <div id="fb-debug" style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:11px;font-family:monospace;color:#333">⏳ Loading...</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px" id="fb-kpi-row"></div>
-  <div class="charts-2">
+  <div class="charts-2" style="margin-bottom:28px">
     <div class="chart-card"><div class="chart-card-title">Package Inventory · FY25/26</div><div class="chart-card-sub">Available vs Sold · THB</div><div style="height:240px;margin-top:12px"><canvas id="chartFbInventory25"></canvas></div><div id="fb-dot-grid-25" style="margin-top:12px;max-height:280px;overflow-y:auto"></div><div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-weight:600"><span>● Closed</span><span style="color:#c97200">● Pipeline</span><span style="color:rgba(14,33,71,0.3)">● Vacant</span></div></div>
     <div class="chart-card"><div class="chart-card-title">Package Inventory · FY26/27</div><div class="chart-card-sub">Available vs Sold · THB</div><div style="height:240px;margin-top:12px"><canvas id="chartFbInventory26"></canvas></div><div id="fb-dot-grid-26" style="margin-top:12px;max-height:280px;overflow-y:auto"></div><div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-weight:600"><span>● Closed</span><span style="color:#c97200">● Pipeline</span><span style="color:rgba(14,33,71,0.3)">● Vacant</span></div></div>
   </div>
@@ -207,6 +209,11 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   </div>
 </div>
 
+<div class="page" id="page-pilinv">
+  <div class="sec-hd" style="margin-bottom:20px"><div class="sec-title">Package Inventory by Pillar</div><div class="sec-sub">All pillars · Excluding Football</div></div>
+  <div id="pilinv-content"><div style="display:flex;align-items:center;gap:12px;padding:48px;color:var(--ink-muted)"><div class="spinner" style="width:24px;height:24px"></div>Loading...</div></div>
+</div>
+
 <div class="page" id="page-pipeline">
   <div class="sec-hd" style="margin-bottom:20px"><div class="sec-title">Client Pipeline Overview</div><div class="sec-sub">All salesperson · Live</div></div>
   <div id="pipeline-kpi-strip" style="display:grid;gap:14px;margin-bottom:20px;"></div>
@@ -230,6 +237,10 @@ const TAB_TARGET_SP='[For DB] Target by salesperson',TAB_TARGET_PIL='[For DB] Ta
 const TAB_FB_TARGET='[For DB] Total Football Package',TAB_FB_ACT='[For DB] Football ACT Rev';
 const TAB_FB_INV='[For DB] Football Inventory (Sales)',TAB_FB_INV_PILLAR='[For DB] Football Inventory (Pillar)';
 const TAB_ACTIVITIES='[For DB] 2026 Sale Activities';
+const TAB_FB_PKG_CONFIG='[For DB] Football Package Config (Sales)';
+const TAB_FB_CLIENTS='[For DB] Football Clients';
+const TAB_PIL_PKG_CONFIG='[For DB] Pillar Package Config';
+const TAB_PIL_CLIENTS='[For DB] Pillar Clients';
 const COL_REVENUE='Total Amount (after SAC)',COL_SALES='Sales Rep 1: Sales Rep Name',COL_PILLAR='Media Type';
 const COL_BRAND='Brand: Brand Name',COL_MONTH='Format Month',COL_QUARTER='Quarter';
 const COL_TYPE='Type',COL_AGENCY_TYPE='Agency type',TARGET_COL='Total';
@@ -255,13 +266,17 @@ function normalizeSp(raw){const m=raw.match(/^(.*?\([^)]+\).*?)\s*\([^)]*(?:Team
 async function loadDashboard(){
   try{
     document.getElementById('loading-screen').style.display='flex';
-    const[rawRows,spRows,pillarRows,rawRows2025,rawRows2024,fbTargetRows,fbActRows,fbInvRows,actRows,pipelineRows,fbInvPillarRows]=await Promise.all([
+    const[rawRows,spRows,pillarRows,rawRows2025,rawRows2024,fbTargetRows,fbActRows,fbInvRows,actRows,pipelineRows,fbInvPillarRows,pkgConfigRows,fbClientRows,pillarPkgConfigRows,pillarClientRows]=await Promise.all([
       fetchSheet(TAB_RAW),fetchSheet(TAB_TARGET_SP),fetchSheet(TAB_TARGET_PIL),
       fetchSheet(TAB_RAW_2025).catch(()=>[]),fetchSheet(TAB_RAW_2024).catch(()=>[]),
       fetchSheet(TAB_FB_TARGET).catch(()=>[]),fetchSheet(TAB_FB_ACT).catch(()=>[]),
       fetchSheet(TAB_FB_INV).catch(()=>[]),fetchSheet(TAB_ACTIVITIES).catch(()=>[]),
       fetchPipeline().catch(()=>[]),
-      fetchSheet(TAB_FB_INV_PILLAR).catch(()=>[])
+      fetchSheet(TAB_FB_INV_PILLAR).catch(()=>[]),
+      fetchSheetRange(TAB_FB_PKG_CONFIG,'A2:D').catch(()=>[]),
+      fetchSheetRange(TAB_FB_CLIENTS,'A4:F').catch(()=>[]),
+      fetchSheetRange(TAB_PIL_PKG_CONFIG,'A2:F').catch(()=>[]),
+      fetchSheetRange(TAB_PIL_CLIENTS,'A4:F').catch(()=>[])
     ]);
     window._pipelineRows=pipelineRows;
     if(!rawRows.length)throw new Error('Raw data tab returned 0 rows.');
@@ -310,7 +325,7 @@ async function loadDashboard(){
     sortedSp.forEach(([sp],i)=>{const canvas=document.getElementById('sc-pillar-'+i);if(!canvas)return;const pData=byPersonPillar[sp]||{},SHOW=['Football','Muay Thai','Running','Talent Management','eSports & Game','Global Rights'];const vals=SHOW.map(p=>{const v=(pData[p]||0);return(p==='eSports & Game'?Math.max(v,(pData['eSports & Games']||0)):v)/1e6;});const bgColors=SHOW.map(p=>{const hex=pillarColors[p]||'#aab8c8',val2=p==='eSports & Game'?Math.max((pData[p]||0),(pData['eSports & Games']||0)):(pData[p]||0);if(val2>0)return hex;const r2=parseInt(hex.slice(1,3),16),g2=parseInt(hex.slice(3,5),16),b2=parseInt(hex.slice(5,7),16);return`rgba(${r2},${g2},${b2},0.15)`;});killChart('sc-pillar-'+i);charts['sc-pillar-'+i]=new Chart(canvas,{type:'bar',data:{labels:SHOW,datasets:[{data:vals,backgroundColor:bgColors,borderRadius:3,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{grid:{display:false},ticks:{color:'rgba(14,33,71,0.55)',font:{size:9},padding:2}}}}});});
     const sortedBrands=Object.entries(byBrand).sort((a,b)=>b[1]-a[1]),allBrandsAsc=sortedBrands,maxBrandRev=sortedBrands[0]?sortedBrands[0][1]:1;
     document.getElementById('brand-tbody').innerHTML=sortedBrands.map(([brd,rev],i)=>{const pct=(rev/totalRevenue*100).toFixed(1),barPct=Math.round(rev/maxBrandRev*100);const repNick=parseName(brandPerson[brd]||'').nick,pil=brandPillar[brd]||'—',pilCol=pillarColors[pil]||'#aab8c8';return`<tr><td style="color:var(--ink-muted);font-size:11px">${i+1}</td><td><strong>${brd}</strong></td><td><span class="pil-pill" style="background:${pilCol}22;color:${pilCol};border:1px solid ${pilCol}44">${pil}</span></td><td style="color:var(--ink-mid)">${repNick}</td><td class="r" style="font-family:'Outfit',sans-serif;font-weight:700;color:var(--navy)">${fmtM(rev)}M</td><td class="r" style="color:var(--ink-mid)">${pct}%</td><td class="r"><div style="width:90px;height:5px;background:var(--navy-soft,#e8edf5);border-radius:99px;overflow:hidden;margin-left:auto"><div style="width:${barPct}%;height:100%;background:${pilCol};border-radius:99px"></div></div></td></tr>`;}).join('');
-    (()=>{const sorted=Object.entries(byBrand).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const total=sorted.reduce((s,[,v])=>s+v,0);if(!total)return;let t1=[],t2=[],t3=[],rest=[];sorted.forEach(([b,v],i)=>{if(i===0)t1.push({b,v});else if(i<3)t2.push({b,v});else if(i<10)t3.push({b,v});else rest.push({b,v});});const top1Val=t1.reduce((s,x)=>s+x.v,0),top3Val=top1Val+t2.reduce((s,x)=>s+x.v,0),top10Val=top3Val+t3.reduce((s,x)=>s+x.v,0),restVal=total-top10Val;const top3Pct=Math.round(top3Val/total*100),risk=top3Pct>=60?{label:'HIGH RISK',color:'#d63b4a'}:top3Pct>=40?{label:'MODERATE',color:'#c97200'}:{label:'HEALTHY',color:'#00a878'};const sEl=document.getElementById('concentration-summary');if(sEl)sEl.innerHTML=`<div style="font-size:11px;font-weight:700;color:${risk.color};background:${risk.color}18;padding:4px 10px;border-radius:6px;border:1px solid ${risk.color}40">${risk.label}</div><div style="font-size:9px;color:var(--ink-muted);margin-top:4px">Top 3 = ${top3Pct}%</div>`;killChart('chartConcentration');charts['chartConcentration']=new Chart(document.getElementById('chartConcentration'),{type:'doughnut',data:{labels:[t1[0]?.b||'#1','#2–3','#4–10','Rest'],datasets:[{data:[top1Val/1e6,(top3Val-top1Val)/1e6,(top10Val-top3Val)/1e6,restVal/1e6],backgroundColor:['#d63b4a','#c97200','#00b4e6','rgba(14,33,71,0.15)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}}}}});const dEl=document.getElementById('concentration-detail');if(!dEl)return;const tData=[{label:'#1 Brand',brands:t1,val:top1Val,pct:Math.round(top1Val/total*100),color:'#d63b4a'},{label:'Top 3 Brands',brands:[...t1,...t2],val:top3Val,pct:top3Pct,color:'#c97200'},{label:'Top 10 Brands',brands:[...t1,...t2,...t3],val:top10Val,pct:Math.round(top10Val/total*100),color:'#00b4e6'},{label:'Remaining',brands:rest,val:restVal,pct:100-Math.round(top10Val/total*100),color:'rgba(14,33,71,0.3)'}];dEl.innerHTML=tData.map(t=>`<div style="background:var(--bg);border-radius:6px;padding:7px 12px;border-left:3px solid ${t.color}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:10px;font-weight:700;color:var(--navy)">${t.label}</span><span style="font-size:11px;font-weight:800;color:${t.color}">${t.pct}%</span></div><div style="background:rgba(14,33,71,0.08);border-radius:3px;height:5px;overflow:hidden;margin-bottom:5px"><div style="height:100%;border-radius:3px;width:${t.pct}%;background:${t.color}"></div></div><div style="font-size:9px;color:var(--ink-muted)">${fmtM(t.val)}M · ${t.brands.slice(0,2).map(x=>x.b||x).join(', ')}${t.brands.length>2?` +${t.brands.length-2}`:''}</div></div>`).join('');})();
+    (()=>{const sorted=Object.entries(byBrand).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const total=sorted.reduce((s,[,v])=>s+v,0);if(!total)return;let t1=[],t2=[],t3=[],rest=[];sorted.forEach(([b,v],i)=>{if(i===0)t1.push({b,v});else if(i<3)t2.push({b,v});else if(i<10)t3.push({b,v});else rest.push({b,v});});const top1Val=t1.reduce((s,x)=>s+x.v,0),top3Val=top1Val+t2.reduce((s,x)=>s+x.v,0),top10Val=top3Val+t3.reduce((s,x)=>s+x.v,0),restVal=total-top10Val;const top3Pct=Math.round(top3Val/total*100),risk=top3Pct>=60?{label:'HIGH RISK',color:'#d63b4a'}:top3Pct>=40?{label:'MODERATE',color:'#c97200'}:{label:'HEALTHY',color:'#00a878'};const sEl=document.getElementById('concentration-summary');if(sEl)sEl.innerHTML=`<div style="font-size:11px;font-weight:700;color:${risk.color};background:${risk.color}18;padding:4px 10px;border-radius:6px;border:1px solid ${risk.color}40">${risk.label}</div><div style="font-size:9px;color:var(--ink-muted);margin-top:4px">Top 3 = ${top3Pct}%</div>`;killChart('chartConcentration');charts['chartConcentration']=new Chart(document.getElementById('chartConcentration'),{type:'doughnut',data:{labels:[t1[0]?.b||'#1','#2–3','#4–10','Rest'],datasets:[{data:[top1Val/1e6,(top3Val-top1Val)/1e6,(top10Val-top3Val)/1e6,restVal/1e6],backgroundColor:['#d63b4a','#c97200','#00b4e6','rgba(14,33,71,0.15)'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}}}}});const dEl=document.getElementById('concentration-detail');if(!dEl)return;const tData=[{label:'#1 Brand',brands:t1,val:top1Val,pct:Math.round(top1Val/total*100),color:'#d63b4a'},{label:'Top 3 Brands',brands:[...t1,...t2],val:top3Val,pct:top3Pct,color:'#c97200'},{label:'Top 10 Brands',brands:[...t1,...t2,...t3],val:top10Val,pct:Math.round(top10Val/total*100),color:'#00b4e6'},{label:'Vacant',brands:rest,val:restVal,pct:100-Math.round(top10Val/total*100),color:'rgba(14,33,71,0.3)'}];dEl.innerHTML=tData.map(t=>`<div style="background:var(--bg);border-radius:6px;padding:7px 12px;border-left:3px solid ${t.color}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:10px;font-weight:700;color:var(--navy)">${t.label}</span><span style="font-size:11px;font-weight:800;color:${t.color}">${t.pct}%</span></div><div style="background:rgba(14,33,71,0.08);border-radius:3px;height:5px;overflow:hidden;margin-bottom:5px"><div style="height:100%;border-radius:3px;width:${t.pct}%;background:${t.color}"></div></div><div style="font-size:9px;color:var(--ink-muted)">${fmtM(t.val)}M · ${t.brands.slice(0,2).map(x=>x.b||x).join(', ')}${t.brands.length>2?` +${t.brands.length-2}`:''}</div></div>`).join('');})();
     (()=>{const ACT_NAMES=['Kate','Nay','Bell'],ACT_TYPES=['Call&Email','Meeting w/ management','Meeting w/o management'];const ACT_LABELS={'Call&Email':'Call & Email','Meeting w/ management':'Meeting w/ mgmt','Meeting w/o management':'Meeting w/o mgmt'};const ACT_PALETTE={'Call&Email':['#dbeeff','#a8d4f7','#6cb8f0','#2e96e0','#1a6cb5','#0e4a8a'],'Meeting w/ management':['#e8edf5','#bfccdf','#8faabf','#5a7fa0','#2e5a80','#0e2147'],'Meeting w/o management':['#d4f5ee','#9de4d1','#5fccb2','#2aad8f','#1a8a70','#0d6654']};const ACT_TEXT={'Call&Email':['#1a6cb5','#1a6cb5','#0e4a8a','#fff','#fff','#fff'],'Meeting w/ management':['#2e5a80','#2e5a80','#2e5a80','#fff','#fff','#fff'],'Meeting w/o management':['#0d6654','#0d6654','#0d6654','#fff','#fff','#fff']};const ACT_ACCENT={'Call&Email':'#2e96e0','Meeting w/ management':'#2e5a80','Meeting w/o management':'#2aad8f'};const actData={};ACT_NAMES.forEach(n=>{actData[n]={};MONTHS.forEach(m=>{actData[n][m]={};ACT_TYPES.forEach(t=>actData[n][m][t]=0);});});actRows.forEach(r=>{const raw=String(r['Sale Name']||'').trim(),name=ACT_NAMES.find(n=>raw.toLowerCase().includes(n.toLowerCase())),type=String(r['Regrouping']||'').trim(),monthRaw=String(r['Month']||'').trim(),mon=MONTHS.find(m=>monthRaw.toLowerCase().startsWith(m.toLowerCase()));if(name&&ACT_TYPES.includes(type)&&mon)actData[name][mon][type]++;});const globalMax={};ACT_TYPES.forEach(t=>{globalMax[t]=Math.max(...ACT_NAMES.flatMap(n=>MONTHS.map(m=>actData[n][m][t])),1);});const el=document.getElementById('sales-activity-cards');if(!el)return;el.innerHTML=ACT_NAMES.map(name=>{const colHeaders=MONTHS.map(m=>`<th style="font-size:8px;font-weight:600;color:var(--ink-muted);text-align:center;padding:0 1px 5px;width:22px">${m}</th>`).join('');const rows2=ACT_TYPES.map(t=>{const pal=ACT_PALETTE[t],txt=ACT_TEXT[t],max=globalMax[t];const cells=MONTHS.map(m=>{const val=actData[name][m][t],idx=val===0?-1:Math.min(Math.floor(val/max*(pal.length-0.01)),pal.length-1),bg=idx<0?'var(--bg)':pal[idx],col2=idx<0?'transparent':txt[idx];return`<td style="padding:1px"><div style="background:${bg};color:${col2};border-radius:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;margin:0 auto">${val||''}</div></td>`;}).join('');return`<tr><td style="padding:1px 8px 1px 0;white-space:nowrap;vertical-align:middle"><div style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${ACT_ACCENT[t]};flex-shrink:0"></span><span style="font-size:9px;font-weight:600;color:var(--ink-mid)">${ACT_LABELS[t]}</span></div></td>${cells}<td></td></tr>`;}).join('');const monthTotals=MONTHS.map(m=>{const tot=ACT_TYPES.reduce((s,t)=>s+actData[name][m][t],0);return`<td style="padding:1px;text-align:center"><span style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;color:${tot>0?'var(--navy)':'var(--ink-faint)'}">${tot||'—'}</span></td>`;}).join('');return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px"><div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:10px">${name}</div><div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%"><thead><tr><th style="min-width:100px"></th>${colHeaders}<th></th></tr></thead><tbody>${rows2}<tr style="border-top:1px solid var(--border)"><td style="padding:4px 8px 0 0;font-size:8px;font-weight:700;color:var(--ink-muted);text-transform:uppercase">Total</td>${monthTotals}<td></td></tr></tbody></table></div></div>`;}).join('');const usActEl=document.getElementById('us-activity-card');if(usActEl){const usMonData={};MONTHS.forEach(m=>{usMonData[m]={};ACT_TYPES.forEach(t=>usMonData[m][t]=0);});actRows.forEach(r=>{const raw=String(r['Sale Name']||'').trim();if(ACT_NAMES.some(n=>raw.toLowerCase().includes(n.toLowerCase())))return;if(!raw.toLowerCase().includes('us')&&!raw.toLowerCase().includes('pollasith'))return;const type=String(r['Regrouping']||'').trim(),monthRaw=String(r['Month']||'').trim(),mon=MONTHS.find(m=>monthRaw.toLowerCase().startsWith(m.toLowerCase()));if(ACT_TYPES.includes(type)&&mon)usMonData[mon][type]++;});const usMax={};ACT_TYPES.forEach(t=>{usMax[t]=Math.max(...MONTHS.map(m=>usMonData[m][t]),1);});const cH=MONTHS.map(m=>`<th style="font-size:8px;font-weight:600;color:var(--ink-muted);text-align:center;padding:0 1px 5px;width:22px">${m}</th>`).join('');const uR=ACT_TYPES.map(t=>{const pal=ACT_PALETTE[t],txt=ACT_TEXT[t],max=usMax[t];const cells=MONTHS.map(m=>{const val=usMonData[m][t],idx=val===0?-1:Math.min(Math.floor(val/max*(pal.length-0.01)),pal.length-1),bg=idx<0?'var(--bg)':pal[idx],col2=idx<0?'transparent':txt[idx];return`<td style="padding:1px"><div style="background:${bg};color:${col2};border-radius:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;margin:0 auto">${val||''}</div></td>`;}).join('');return`<tr><td style="padding:1px 8px 1px 0;white-space:nowrap"><span style="display:inline-block;width:6px;height:6px;border-radius:1px;background:${ACT_ACCENT[t]};flex-shrink:0;margin-right:4px"></span><span style="font-size:9px;font-weight:600;color:var(--ink-mid)">${ACT_LABELS[t]}</span></td>${cells}<td></td></tr>`;}).join('');const uT=MONTHS.map(m=>{const tot=ACT_TYPES.reduce((s,t)=>s+usMonData[m][t],0);return`<td style="padding:1px;text-align:center"><span style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;color:${tot>0?'var(--navy)':'var(--ink-faint)'}">${tot||'—'}</span></td>`;}).join('');usActEl.innerHTML=`<div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:10px">Us · Activity</div><div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%"><thead><tr><th style="min-width:100px"></th>${cH}<th></th></tr></thead><tbody>${uR}<tr style="border-top:1px solid var(--border)"><td style="padding:4px 8px 0 0;font-size:8px;font-weight:700;color:var(--ink-muted);text-transform:uppercase">Total</td>${uT}<td></td></tr></tbody></table></div>`;}})();
     const gC='rgba(14,33,71,0.06)',tC='rgba(14,33,71,0.45)';
     const bpColors=['#0e4a7a','#1a6cb5','#2e8fd4','#5aafdf','#85c8e8','#006b55','#00a878','#3dc49a','#7fd8be','#5a3e8a','#7b5ea7','#a688c8','#8a3a2a','#c05a3a','#d4836a','#e8b09a','#4a4a6a','#7a7a9a','#aaaabc','#3a8fa8'];
@@ -329,16 +344,63 @@ async function loadDashboard(){
     const sortedPillars=Object.entries(byPillar).sort((a,b)=>b[1]-a[1]);
     const pillarLabelPlugin={id:'pillarLabels',afterDatasetsDraw(chart){const{ctx,data,scales:{x,y}}=chart;ctx.save();data.datasets.forEach((ds,di)=>{ds.data.forEach((val,i)=>{if(!val)return;const meta=chart.getDatasetMeta(di),bar=meta.data[i],isActual=di===1,label=fmtM(val*1e6)+'M',bw=Math.abs(bar.x-x.getPixelForValue(0));ctx.font=isActual?'800 12px Outfit,sans-serif':'600 11px Outfit,sans-serif';const tw=ctx.measureText(label).width;if(bw>tw+14){ctx.fillStyle=isActual?'#ffffff':'rgba(14,33,71,0.5)';ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(label,bar.x-8,bar.y);}});});ctx.restore();}};
     killChart('chartPillarOverview');charts['chartPillarOverview']=new Chart(document.getElementById('chartPillarOverview'),{type:'bar',data:{labels:sortedPillars.map(([p])=>p),datasets:[{label:'Full Year Target',data:sortedPillars.map(([p])=>(targetByPillar[p]||0)/1e6),backgroundColor:'rgba(14,33,71,0.09)',borderRadius:{topLeft:0,topRight:6,bottomLeft:0,bottomRight:6},borderSkipped:false,categoryPercentage:0.75,barPercentage:0.5,order:2},{label:'YTD Revenue',data:sortedPillars.map(([,r])=>r/1e6),backgroundColor:sortedPillars.map(([p])=>pillarColors[p]||'#aab8c8'),borderRadius:{topLeft:0,topRight:6,bottomLeft:0,bottomRight:6},borderSkipped:false,categoryPercentage:0.75,barPercentage:0.5,order:1}]},plugins:[pillarLabelPlugin],options:{grouped:false,indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,color:tC}}},scales:{x:{grid:{color:gC},ticks:{color:tC,callback:v=>fmtM(v*1e6)+'M'}},y:{grid:{display:false},ticks:{color:'rgba(14,33,71,0.7)',font:{size:12}}}}}});
-    const lollipopData=sortedPillars.map(([p,r])=>{const tgt=targetByPillar[p]||0;return{pct:tgt>0?Math.round(r/tgt*100):0,color:pillarColors[p]||'#aab8c8'};});
-    const lollipopPlugin={id:'lollipop',afterDatasetsDraw(chart){const{ctx,scales:{x,y}}=chart;ctx.save();lollipopData.forEach((d,i)=>{const yPos=y.getPixelForValue(i),x0=x.getPixelForValue(0),xEnd=x.getPixelForValue(Math.min(d.pct,100));ctx.beginPath();ctx.moveTo(x0,yPos);ctx.lineTo(x.getPixelForValue(100),yPos);ctx.strokeStyle='rgba(14,33,71,0.10)';ctx.lineWidth=4;ctx.lineCap='round';ctx.stroke();ctx.beginPath();ctx.moveTo(x0,yPos);ctx.lineTo(xEnd,yPos);ctx.strokeStyle=d.color;ctx.lineWidth=4;ctx.stroke();ctx.beginPath();ctx.arc(xEnd,yPos,7,0,Math.PI*2);ctx.fillStyle=d.color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();ctx.font='bold 11px Outfit,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle=d.color;ctx.fillText(d.pct.toFixed(0)+'%',xEnd+13,yPos);});ctx.restore();}};
-    killChart('chartPillarPct');charts['chartPillarPct']=new Chart(document.getElementById('chartPillarPct'),{type:'bar',data:{labels:sortedPillars.map(([p])=>p),datasets:[{data:sortedPillars.map(()=>0),backgroundColor:'transparent'}]},plugins:[lollipopPlugin],options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,clip:false,layout:{padding:{right:45}},plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{min:0,max:100,grid:{color:gC},ticks:{color:tC,callback:v=>v+'%'}},y:{grid:{display:false},ticks:{color:'rgba(14,33,71,0.7)',font:{size:11,weight:'600'}}}}}});
+    // ── Revenue Forecast by Pillar ──
+    window._reRenderForecast=(()=>{
+      const render=()=>{
+      const fcEl=document.getElementById('forecast-pillar-card');if(!fcEl)return;
+      const pipe=window._pillarPipeline||{};
+      const fmtMF=v=>v>=1e6?Math.round(v/1e6).toLocaleString()+'M':v>0?Math.round(v/1e3)+'K':'—';
+      const PIL_ORDER=['Football','Muay Thai','Running','Talent Management','eSports & Game','eSports & Games','Global Rights'];
+      // Build pillar list from all sources — use actual pipe keys so E-Sport etc. match exactly
+      const allPils=[...new Set([...Object.keys(targetByPillar),...Object.keys(byPillar),...Object.keys(pipe)])].filter(p=>p!=='Other'&&p!=='Others'&&p!=='total'&&p!=='Total'&&p!=='E-Sport');
+      allPils.sort((a,b)=>{const ia=PIL_ORDER.indexOf(a),ib=PIL_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+      allPils.sort((a,b)=>{const ia=PIL_ORDER.indexOf(a),ib=PIL_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+      const rows=allPils.map(pil=>{
+        const actual=(byPillar[pil]||0)+(pil==='eSports & Game'?(byPillar['eSports & Games']||0):(pil==='eSports & Games'?(byPillar['eSports & Game']||0):0));
+        const pipeline=pipe[pil]||(pil==='eSports & Game'||pil==='eSports & Games'?pipe['E-Sport']:0)||0;
+        const target=targetByPillar[pil]||0;
+        const isFb=pil==='Football';
+        const projected=isFb?actual:(actual+pipeline);
+        const gap=target>0?(target-projected):0;
+        const pct=target>0?Math.min(Math.round(projected/target*100),999):0;
+        const col=pillarColors[pil]||'#aab8c8';
+        const barActPct=target>0?Math.min(actual/target*100,100).toFixed(1):0;
+        const barProjPct=target>0?Math.min(projected/target*100,100).toFixed(1):100;
+        const gapCol=gap<=0?'var(--green)':gap/target<0.2?'var(--amber)':'var(--red)';
+        const pipeHtml=isFb
+          ?`<span style="font-size:10px;color:var(--ink-muted);font-style:italic">Pipeline TBD</span>`
+          :`<span style="font-size:11px;font-weight:700;color:#c97200">+${fmtMF(pipeline)}</span><span style="font-size:10px;color:var(--ink-muted)"> pipeline</span>`;
+        return`<div style="margin-bottom:12px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:11px;font-weight:700;color:var(--navy)">${pil}</span>
+              <span style="font-size:11px;font-weight:700;color:${col}">${fmtMF(actual)}</span>
+              <span style="font-size:10px;color:var(--ink-faint)">actual</span>
+              ${pipeHtml}
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px">
+              <span style="font-size:12px;font-weight:800;color:var(--navy)">${isFb?fmtMF(actual)+'*':fmtMF(projected)}</span>
+              ${target>0?`<span style="font-size:10px;font-weight:700;color:${gapCol}">${gap<=0?'✓ On track':'−'+fmtMF(gap)+' gap'}</span>`:''}
+            </div>
+          </div>
+          <div style="position:relative;height:7px;background:rgba(14,33,71,0.08);border-radius:4px;overflow:hidden">
+            <div style="position:absolute;left:0;top:0;height:100%;width:${barProjPct}%;background:${col};opacity:0.25;border-radius:4px"></div>
+            <div style="position:absolute;left:0;top:0;height:100%;width:${barActPct}%;background:${col};border-radius:4px"></div>
+          </div>
+          ${target>0?`<div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:9px;color:var(--ink-muted)">${pct}% of target</span><span style="font-size:9px;color:var(--ink-muted)">${fmtMF(target)} target</span></div>`:''}
+        </div>`;
+      }).join('');
+      fcEl.innerHTML=rows+`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:9px;color:var(--ink-faint)">* Football pipeline TBD · bar = actual only · dark = actual · light = projected</div>`;
+      };render();return render;
+    })();
     const brandLabelPlugin={id:'brandLabels',afterDatasetsDraw(chart){const{ctx,scales:{x,y}}=chart;ctx.save();chart.getDatasetMeta(0).data.forEach((bar,i)=>{const val=allBrandsAsc[i][1],pct=(val/totalRevenue*100).toFixed(1),label=fmtM(val)+'M  '+pct+'%';ctx.font='600 10px Manrope,sans-serif';ctx.fillStyle='rgba(14,33,71,0.65)';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(label,bar.x+6,bar.y);});ctx.restore();}};
     killChart('chartBrand');charts['chartBrand']=new Chart(document.getElementById('chartBrand'),{type:'bar',plugins:[brandLabelPlugin],data:{labels:allBrandsAsc.map(([b])=>b),datasets:[{data:allBrandsAsc.map(([,r])=>r/1e6),backgroundColor:'rgba(14,33,71,0.82)',hoverBackgroundColor:'var(--cyan)',borderRadius:{topLeft:0,topRight:5,bottomLeft:0,bottomRight:5},borderSkipped:false,barThickness:14}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,layout:{padding:{right:90}},plugins:{legend:{display:false}},scales:{x:{display:false},y:{grid:{display:false},ticks:{color:'rgba(14,33,71,0.75)',font:{size:10,weight:'600'}}}}}});
     const allTypesSet=new Set();Object.values(byMonthType).forEach(obj=>Object.keys(obj).forEach(t=>allTypesSet.add(t)));const typeOrder=['Direct','Agency'],allTypes=[...typeOrder.filter(t=>allTypesSet.has(t)),...[...allTypesSet].filter(t=>!typeOrder.includes(t)).sort()];const typeColors={'Direct':'#0e2147','Agency':'#00b4e6'},fallbackCols=['#1a6cb5','#00a878','#c97200','#7b5ea7','#e05c5c'];
     const typeMonthLabelPlugin={id:'typeMonthLabel',afterDatasetsDraw(chart){if(chart.canvas.id!=='chartTypeMonth')return;const{ctx,data,scales:{x,y}}=chart;chart.data.datasets.forEach((ds,di)=>{chart.getDatasetMeta(di).data.forEach((bar,i)=>{const val=ds.data[i]||0;if(val<1)return;ctx.save();ctx.font="700 10px 'Outfit',sans-serif";ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(Math.round(val)+'M',bar.x,bar.y+12);ctx.restore();});});const totals=data.labels.map((_,i)=>data.datasets.reduce((s,ds)=>s+(ds.data[i]||0),0));totals.forEach((tot,i)=>{if(tot<=0)return;ctx.save();ctx.font="700 11px 'Outfit',sans-serif";ctx.fillStyle='rgba(14,33,71,0.80)';ctx.textAlign='center';ctx.fillText(Math.round(tot)+'M',x.getPixelForValue(i),y.getPixelForValue(tot)-5);ctx.restore();});}};
     killChart('chartTypeMonth');charts['chartTypeMonth']=new Chart(document.getElementById('chartTypeMonth'),{type:'bar',plugins:[typeMonthLabelPlugin],data:{labels:MONTHS,datasets:allTypes.map((typ,ti)=>({label:typ,data:MONTHS.map(m=>(byMonthType[m]&&byMonthType[m][typ]||0)/1e6),backgroundColor:typeColors[typ]||fallbackCols[ti%fallbackCols.length],borderRadius:4,borderSkipped:'bottom',stack:'types'}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12,color:'rgba(14,33,71,0.65)',font:{size:11}}},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'rgba(14,33,71,0.65)',font:{weight:'600'}}},y:{stacked:true,grid:{color:gC},ticks:{color:'rgba(14,33,71,0.65)',callback:v=>v+'M'}}}}});
     const AGENCY_COLORS={'Amplifi':'#e09000','Group M':'#f0b340','MI Group':'#f5cc7a','Other Agency':'#fae3b0'};const agencyTypeOrder=['Amplifi','Group M','MI Group','Other Agency'];const allAgTypes=[...new Set([...agencyTypeOrder,...Object.values(byMonthAgencyType).flatMap(m=>Object.keys(m))])];const agTypeOrder=[...agencyTypeOrder.filter(t=>allAgTypes.includes(t)),...allAgTypes.filter(t=>!agencyTypeOrder.includes(t))];
-    killChart('chartAgencyType');charts['chartAgencyType']=new Chart(document.getElementById('chartAgencyType'),{type:'bar',data:{labels:MONTHS,datasets:agTypeOrder.map(at=>({label:at,data:MONTHS.map(m=>(byMonthAgencyType[m]&&byMonthAgencyType[m][at]||0)/1e6),backgroundColor:AGENCY_COLORS[at]||'#aab8c8',borderRadius:4,borderSkipped:'bottom',stack:'ag'}))},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'rgba(14,33,71,0.65)',font:{weight:'600'}}},y:{stacked:true,grid:{color:gC},ticks:{color:'rgba(14,33,71,0.65)',callback:v=>v+'M'},beginAtZero:true}}}});
+    const agTotalLabelPlugin={id:'agTotLbl',afterDatasetsDraw(chart){const{ctx,scales:{x,y},data}=chart;ctx.save();ctx.font="700 11px 'Outfit',sans-serif";ctx.fillStyle='rgba(14,33,71,0.75)';ctx.textAlign='center';data.labels.forEach((_,i)=>{const tot=data.datasets.reduce((s,ds)=>s+(ds.data[i]||0),0);if(tot<0.5)return;ctx.fillText(Math.round(tot)+'M',x.getPixelForValue(i),y.getPixelForValue(tot)-5);});ctx.restore();}};
+    killChart('chartAgencyType');charts['chartAgencyType']=new Chart(document.getElementById('chartAgencyType'),{type:'bar',plugins:[agTotalLabelPlugin],data:{labels:MONTHS,datasets:agTypeOrder.map(at=>({label:at,data:MONTHS.map(m=>(byMonthAgencyType[m]&&byMonthAgencyType[m][at]||0)/1e6),backgroundColor:AGENCY_COLORS[at]||'#aab8c8',borderRadius:4,borderSkipped:'bottom',stack:'ag'}))},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'rgba(14,33,71,0.65)',font:{weight:'600'}}},y:{stacked:true,grid:{color:gC},ticks:{color:'rgba(14,33,71,0.65)',callback:v=>v+'M'},beginAtZero:true}}}});
     (()=>{
       const COL_FB_PKG='Football Package Type',COL_FB_BRAND='Brand: Brand Name',COL_FB_MONTH='Format Month',COL_FB_REV='Total Amount (after SAC)',COL_FB_CONTRACT='Contract';
       let fbTarget25=513200000,fbTarget26=688300000;
@@ -349,9 +411,10 @@ async function loadDashboard(){
       fbTargetRows.forEach(r=>{const contract=String(r['Contract']||'').trim(),pkg=String(r['Package Type']||'').trim(),val=parseFloat(r['Total Package Value'])||0;if(!contract||!pkg||val<=0)return;if(contract.toLowerCase().includes('total')||contract.toLowerCase().includes('grand'))return;if(!tgtByContractPkg[contract])tgtByContractPkg[contract]={};tgtByContractPkg[contract][pkg]=(tgtByContractPkg[contract][pkg]||0)+val;if(contract.includes('25'))tgtFY25+=val;else tgtFY26+=val;});
       if(tgtFY25>0)fbTarget25=tgtFY25;if(tgtFY26>0)fbTarget26=tgtFY26;
       fbActRows.forEach(r=>{const contract=String(r[COL_FB_CONTRACT]||'').trim(),pkg=String(r[COL_FB_PKG]||'').trim(),brand=String(r[COL_FB_BRAND]||'').trim(),month=String(r[COL_FB_MONTH]||'').trim(),rev=parseFloat(String(r[COL_FB_REV]||'').replace(/,/g,''))||0;if(!contract||!month||rev<=0)return;fbActByContract[contract]=(fbActByContract[contract]||0)+rev;const isFY25c=contract.includes('FY25')||contract.includes('25/26');if(brand){if(isFY25c)fbBrandByContract25[brand]=(fbBrandByContract25[brand]||0)+rev;else fbBrandByContract26[brand]=(fbBrandByContract26[brand]||0)+rev;}if(ALL_TIMELINE_MONTHS.includes(month)){if(!byMonthContract[month])byMonthContract[month]={};byMonthContract[month][contract]=(byMonthContract[month][contract]||0)+rev;if(brand){if(!byBrandMonthContract[brand])byBrandMonthContract[brand]={};if(!byBrandMonthContract[brand][month])byBrandMonthContract[brand][month]={};byBrandMonthContract[brand][month][contract]=(byBrandMonthContract[brand][month][contract]||0)+rev;if(!brandPkgType[brand])brandPkgType[brand]=pkg;}}if(isFY25c){if(pkg)fbContractPkg25[pkg]=(fbContractPkg25[pkg]||0)+rev;}else{if(pkg)fbContractPkg26[pkg]=(fbContractPkg26[pkg]||0)+rev;}});
-      const invByPkg25={},invByPkg26={};
-      fbInvRows.forEach(r=>{const pkg=String(r['Football Package Type']||'').trim(),name=String(r['Contract Name']||'').trim(),val=parseFloat(String(r['Total Contract Value']||'').replace(/,/g,''))||0,status=String(r['Actual Package Status']||'').trim(),brand=String(r['Brand: Brand Name']||'').trim(),fy=String(r['Contract']||'').trim();if(!pkg||!status)return;const isSold=status.toLowerCase().includes('close'),isPipeline=status.toLowerCase().includes('pipeline'),isFY26=fy.includes('26/27')||fy.includes('FY26'),target=isFY26?invByPkg26:invByPkg25;if(!target[pkg])target[pkg]={sold:[],vacant:[],pipeline:[]};const entry={name,val,brand};if(isSold)target[pkg].sold.push(entry);else if(isPipeline)target[pkg].pipeline.push(entry);else target[pkg].vacant.push(entry);});
-      window._fbData={fbTarget25,fbTarget26,fbActByContract,fbContractPkg25,fbContractPkg26,fbBrandByContract25,fbBrandByContract26,byMonthContract,byBrandMonthContract,brandPkgType,ALL_TIMELINE_MONTHS,fbInvRows,fbInvPillarRows,tgtByContractPkg};
+      window._fbData={fbTarget25,fbTarget26,fbActByContract,fbContractPkg25,fbContractPkg26,fbBrandByContract25,fbBrandByContract26,byMonthContract,byBrandMonthContract,brandPkgType,ALL_TIMELINE_MONTHS,fbInvRows,fbInvPillarRows,tgtByContractPkg,pkgConfigRows,fbClientRows};
+      window._pillarInvData={pillarPkgConfigRows,pillarClientRows};
+      // Trigger renderPillarInv early (hidden) so _pillarPipeline is ready for forecast card
+      setTimeout(()=>renderPillarInv(window._pillarInvData),0);
       document.getElementById('fb-debug').style.display='none';
     })();
     document.getElementById('loading-screen').style.display='none';
@@ -360,7 +423,7 @@ async function loadDashboard(){
 
 function renderFootball(d){
   if(!d)return;
-  const{fbTarget25,fbTarget26,fbActByContract={},fbContractPkg25={},fbContractPkg26={},fbBrandByContract25={},fbBrandByContract26={},byMonthContract={},byBrandMonthContract={},brandPkgType={},ALL_TIMELINE_MONTHS=[],fbInvRows=[],tgtByContractPkg={}}=d;
+  const{fbTarget25,fbTarget26,fbActByContract={},fbContractPkg25={},fbContractPkg26={},fbBrandByContract25={},fbBrandByContract26={},byMonthContract={},byBrandMonthContract={},brandPkgType={},ALL_TIMELINE_MONTHS=[],fbInvRows=[],tgtByContractPkg={},pkgConfigRows=[],fbClientRows=[]}=d;
   const tColor='rgba(14,33,71,0.65)',gColor='rgba(14,33,71,0.06)';
   const fmtMC=v=>Math.round(v/1e6).toLocaleString('en-US');
   const actFY25=Object.entries(fbActByContract).filter(([k])=>k.includes('FY25')||k.includes('25/26')).reduce((s,[,v])=>s+v,0);
@@ -370,11 +433,77 @@ function renderFootball(d){
   const kpiEl=document.getElementById('fb-kpi-row');
   if(kpiEl)kpiEl.innerHTML=`<div class="kpi-card" style="padding:20px 22px"><div class="kpi-label" style="margin-bottom:8px">FY25/26 Contract</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px"><div style="background:var(--bg);border-radius:6px;padding:8px 12px;border-left:3px solid var(--navy)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted)">Actual</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${fmtMC(actFY25)}M</div></div><div style="background:var(--bg);border-radius:6px;padding:8px 12px;border-left:3px solid rgba(14,33,71,0.2)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted)">Target</div><div style="font-size:22px;font-weight:800;color:rgba(14,33,71,0.45)">${fmtMC(fbTarget25)}M</div></div></div><div style="background:var(--bg);border-radius:6px;height:7px;overflow:hidden;margin-bottom:4px"><div style="height:100%;border-radius:6px;width:${Math.min(pct25,100).toFixed(1)}%;background:${col25}"></div></div><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div style="font-size:16px;font-weight:800;color:${col25}">${pct25.toFixed(1)}%</div><div style="font-size:11px;color:var(--red);font-weight:600">Gap: ${fmtMC(Math.max(fbTarget25-actFY25,0))}M</div></div><div style="border-top:1px solid var(--border);padding-top:10px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted);margin-bottom:7px">By Package Type</div>${Object.entries(fbContractPkg25).sort((a,b)=>b[1]-a[1]).map(([p,v])=>{const tgtP=(tgtByContractPkg['FY25/26']&&tgtByContractPkg['FY25/26'][p]||0),pP=tgtP>0?Math.round(v/tgtP*100):null;return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:10px;font-weight:600;color:var(--navy)">${p}</span><div><span style="font-size:10px;font-weight:700;color:var(--navy)">${fmtMC(v)}M</span>${pP!==null?`<span style="font-size:9px;font-weight:700;color:${pP>=65?'#00a878':pP>=40?'#c97200':'#d63b4a'};margin-left:6px">${pP}%</span>`:''}</div></div>`;}).join('')}</div></div>
   <div class="kpi-card" style="padding:20px 22px"><div class="kpi-label" style="margin-bottom:8px">FY26/27 Contract</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px"><div style="background:var(--bg);border-radius:6px;padding:8px 12px;border-left:3px solid var(--navy)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted)">Actual</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${fmtMC(actFY26)}M</div></div><div style="background:var(--bg);border-radius:6px;padding:8px 12px;border-left:3px solid rgba(14,33,71,0.2)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted)">Target</div><div style="font-size:22px;font-weight:800;color:rgba(14,33,71,0.45)">${fmtMC(fbTarget26)}M</div></div></div><div style="background:var(--bg);border-radius:6px;height:7px;overflow:hidden;margin-bottom:4px"><div style="height:100%;border-radius:6px;width:${Math.min(pct26,100).toFixed(1)}%;background:${col26}"></div></div><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div style="font-size:16px;font-weight:800;color:${col26}">${pct26.toFixed(1)}%</div><div style="font-size:11px;color:var(--red);font-weight:600">Gap: ${fmtMC(Math.max(fbTarget26-actFY26,0))}M</div></div><div style="border-top:1px solid var(--border);padding-top:10px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted);margin-bottom:7px">By Package Type</div>${Object.entries(fbContractPkg26).sort((a,b)=>b[1]-a[1]).map(([p,v])=>{const tgtP=(tgtByContractPkg['FY26/27']&&tgtByContractPkg['FY26/27'][p]||0),pP=tgtP>0?Math.round(v/tgtP*100):null;return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:10px;font-weight:600;color:var(--navy)">${p}</span><div><span style="font-size:10px;font-weight:700;color:var(--navy)">${fmtMC(v)}M</span>${pP!==null?`<span style="font-size:9px;font-weight:700;color:${pP>=65?'#00a878':pP>=40?'#c97200':'#d63b4a'};margin-left:6px">${pP}%</span>`:''}</div></div>`;}).join('')}</div></div>`;
-  const renderInvCard=(chartId,dotId,byPkg)=>{const pkgOrder=['FAT','FAT - MT','EPL','AIS','MONO'],extra=Object.keys(byPkg).filter(p=>!pkgOrder.includes(p)),pkgs=[...pkgOrder.filter(p=>byPkg[p]),...extra];if(!pkgs.length){killChart(chartId);return;}const soldVals=pkgs.map(p=>(byPkg[p]?.sold||[]).reduce((s,x)=>s+x.val,0)/1e6),pipelineVals=pkgs.map(p=>(byPkg[p]?.pipeline||[]).reduce((s,x)=>s+x.val,0)/1e6),vacantVals=pkgs.map(p=>(byPkg[p]?.vacant||[]).reduce((s,x)=>s+x.val,0)/1e6);const lPlugin={id:'invLbl_'+chartId,afterDatasetsDraw(chart){if(chart.canvas.id!==chartId)return;const{ctx,scales:{x,y}}=chart;chart.data.datasets.forEach((ds,di)=>{chart.getDatasetMeta(di).data.forEach((bar,i)=>{const val=ds.data[i]||0;if(val<0.5)return;const barH=Math.abs(bar.base-bar.y);if(barH<14)return;ctx.save();ctx.font="600 10px 'Outfit',sans-serif";ctx.fillStyle=di===0?'rgba(255,255,255,0.95)':'rgba(14,33,71,0.55)';ctx.textAlign='center';ctx.fillText(Math.round(val)+'M',bar.x,bar.y+barH/2+4);ctx.restore();});});ctx.save();ctx.font="bold 11px 'Outfit',sans-serif";ctx.fillStyle='rgba(14,33,71,0.80)';ctx.textAlign='center';pkgs.forEach((_,i)=>{const tot=(soldVals[i]||0)+(pipelineVals[i]||0)+(vacantVals[i]||0);if(tot<0.5)return;ctx.fillText(Math.round(tot)+'M',x.getPixelForValue(i),y.getPixelForValue(tot)-8);});ctx.restore();}};killChart(chartId);charts[chartId]=new Chart(document.getElementById(chartId),{type:'bar',plugins:[lPlugin],data:{labels:pkgs,datasets:[{label:'Closed Deal',data:soldVals,backgroundColor:'#2a9d8f',borderRadius:0,borderSkipped:false,stack:'inv',categoryPercentage:0.6,barPercentage:0.9},{label:'Pipeline',data:pipelineVals,backgroundColor:'rgba(201,114,0,0.6)',borderRadius:0,borderSkipped:false,stack:'inv',categoryPercentage:0.6,barPercentage:0.9},{label:'Vacant',data:vacantVals,backgroundColor:'rgba(14,33,71,0.10)',borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0},borderSkipped:false,stack:'inv',categoryPercentage:0.6,barPercentage:0.9}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y>0?`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(0)}M`:null}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tColor,font:{weight:'600'}}},y:{stacked:true,grid:{color:gColor},ticks:{color:tColor,callback:v=>v+'M'},beginAtZero:true}}}});const dotEl=document.getElementById(dotId);if(dotEl)dotEl.innerHTML=pkgs.map(pkg=>{const inv=byPkg[pkg]||{sold:[],vacant:[],pipeline:[]},soldC=inv.sold.length,pipeC=(inv.pipeline||[]).length,vacC=inv.vacant.length,totC=soldC+pipeC+vacC,pctSold=totC>0?Math.round(soldC/totC*100):0;const dots=[...inv.sold.map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Closed" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#2a9d8f;margin:2px;cursor:pointer"></span>`),...(inv.pipeline||[]).map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Pipeline" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#c97200;margin:2px;cursor:pointer"></span>`),...inv.vacant.map(x=>`<span title="${x.name}: ${fmtMC(x.val)}M · Vacant" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:rgba(14,33,71,0.12);border:1px dashed rgba(14,33,71,0.3);margin:2px;cursor:pointer"></span>`)].join('');return`<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:var(--navy);margin-bottom:3px">${pkg} <span style="color:#2a9d8f">${soldC} Closed</span>${pipeC>0?` · <span style="color:#c97200">${pipeC} Pipeline</span>`:''} · <span style="color:var(--ink-muted)">${vacC} Vacant</span> <span style="font-size:10px;font-weight:800;color:#2a9d8f;margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(42,157,143,0.10)">${pctSold}%</span></div><div style="display:flex;align-items:center;flex-wrap:wrap">${dots}</div></div>`;}).join('');};
+  // ── Build slotMap + clientMap for expand rows ──
+  const _normFY=s=>{const t=String(s||'').trim();if(t.includes('25/26')||t.includes('FY25'))return'FY25/26';if(t.includes('26/27')||t.includes('FY26'))return'FY26/27';return t;};
+  const _cfgHd=pkgConfigRows.length?Object.keys(pkgConfigRows[0]):[];
+  const _cfgN=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const _cfgCT=_cfgHd.find(h=>_cfgN(h).includes('contract')&&!_cfgN(h).includes('name'))||_cfgHd[0]||'';
+  const _cfgPK=_cfgHd.find(h=>_cfgN(h).includes('package'))||_cfgHd[1]||'';
+  const _cfgSB=_cfgHd.find(h=>_cfgN(h).includes('contractname')||_cfgN(h).includes('name'))||_cfgHd[2]||'';
+  const _cfgSL=_cfgHd.find(h=>_cfgN(h).includes('slot'))||_cfgHd[3]||'';
+  const _slotMap={};
+  pkgConfigRows.forEach(r=>{const fy=_normFY(r[_cfgCT]),pkg=String(r[_cfgPK]||'').trim(),sub=String(r[_cfgSB]||'').trim(),sl=parseInt(r[_cfgSL])||0;if(fy&&pkg&&sub&&sl>0)_slotMap[`${fy}|${pkg}|${sub}`]=sl;});
+  const _clHd=fbClientRows.length?Object.keys(fbClientRows[0]):[];
+  const _clN=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const _clCT=_clHd.find(h=>_clN(h).includes('contract')&&!_clN(h).includes('name')&&!_clN(h).includes('value'))||_clHd[0]||'';
+  const _clPK=_clHd.find(h=>_clN(h).includes('package'))||_clHd[1]||'';
+  const _clSB=_clHd.find(h=>_clN(h).includes('contractname')||(_clN(h).includes('name')&&!_clN(h).includes('brand')))||_clHd[2]||'';
+  const _clBR=_clHd.find(h=>_clN(h).includes('brand'))||_clHd[4]||'';
+  const _clST=_clHd.find(h=>_clN(h).includes('stage')||_clN(h).includes('status'))||_clHd[5]||'';
+  const _clientMap={};
+  fbClientRows.forEach(r=>{const fy=_normFY(r[_clCT]),pkg=String(r[_clPK]||'').trim(),sub=String(r[_clSB]||'').trim(),brand=String(r[_clBR]||'').trim(),stage=String(r[_clST]||'').toLowerCase().trim();if(!fy||!pkg||!sub||!brand)return;const k=`${fy}|${pkg}|${sub}`;if(!_clientMap[k])_clientMap[k]=[];_clientMap[k].push({brand,stage});});
+  Object.keys(_clientMap).forEach(k=>_clientMap[k].sort((a,b)=>(a.stage.includes('close')?0:1)-(b.stage.includes('close')?0:1)));
+  // ── renderInvCard: chart + dot grid + expand rows per package ──
+  const renderInvCard=(chartId,dotId,byPkg,fy)=>{
+    const pkgOrder=['FAT','FAT - MT','EPL','AIS','MONO'],extra=Object.keys(byPkg).filter(p=>!pkgOrder.includes(p)),pkgs=[...pkgOrder.filter(p=>byPkg[p]),...extra];
+    if(!pkgs.length){killChart(chartId);return;}
+    const soldVals=pkgs.map(p=>(byPkg[p]?.sold||[]).reduce((s,x)=>s+x.val,0)/1e6),pipelineVals=pkgs.map(p=>(byPkg[p]?.pipeline||[]).reduce((s,x)=>s+x.val,0)/1e6),vacantVals=pkgs.map(p=>(byPkg[p]?.vacant||[]).reduce((s,x)=>s+x.val,0)/1e6);
+    const lPlugin={id:'invLbl_'+chartId,afterDatasetsDraw(chart){if(chart.canvas.id!==chartId)return;const{ctx,scales:{x,y}}=chart;chart.data.datasets.forEach((ds,di)=>{chart.getDatasetMeta(di).data.forEach((bar,i)=>{const val=ds.data[i]||0;if(val<0.5)return;const barH=Math.abs(bar.base-bar.y);if(barH<14)return;ctx.save();ctx.font="600 10px 'Outfit',sans-serif";ctx.fillStyle=di===0?'rgba(255,255,255,0.95)':'rgba(14,33,71,0.55)';ctx.textAlign='center';ctx.fillText(Math.round(val)+'M',bar.x,bar.y+barH/2+4);ctx.restore();});});ctx.save();ctx.font="bold 11px 'Outfit',sans-serif";ctx.fillStyle='rgba(14,33,71,0.80)';ctx.textAlign='center';pkgs.forEach((_,i)=>{const tot=(soldVals[i]||0)+(pipelineVals[i]||0)+(vacantVals[i]||0);if(tot<0.5)return;ctx.fillText(Math.round(tot)+'M',x.getPixelForValue(i),y.getPixelForValue(tot)-8);});ctx.restore();}};
+    killChart(chartId);charts[chartId]=new Chart(document.getElementById(chartId),{type:'bar',plugins:[lPlugin],data:{labels:pkgs,datasets:[{label:'Closed Deal',data:soldVals,backgroundColor:'#2a9d8f',borderRadius:0,borderSkipped:false,stack:'inv',categoryPercentage:0.6,barPercentage:0.9},{label:'Pipeline',data:pipelineVals,backgroundColor:'rgba(201,114,0,0.6)',borderRadius:0,borderSkipped:false,stack:'inv',categoryPercentage:0.6,barPercentage:0.9},{label:'Vacant',data:vacantVals,backgroundColor:'rgba(14,33,71,0.10)',borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0},borderSkipped:false,stack:'inv',categoryPercentage:0.6,barPercentage:0.9}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y>0?`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(0)}M`:null}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tColor,font:{weight:'600'}}},y:{stacked:true,grid:{color:gColor},ticks:{color:tColor,callback:v=>v+'M'},beginAtZero:true}}}});
+    const dotEl=document.getElementById(dotId);if(!dotEl)return;
+    // Build expand rows for a given pkg
+    const buildExpandRows=(pkg)=>{
+      const cnKeys=[...new Set([...Object.keys(_slotMap),...Object.keys(_clientMap)])].filter(k=>k.startsWith(`${fy}|${pkg}|`));
+      if(!cnKeys.length)return'';
+      return cnKeys.map(k=>{
+        const sub=k.split('|').slice(2).join('|');
+        const ts=_slotMap[k]||0,clients=_clientMap[k]||[];
+        const inCap=clients.slice(0,ts||clients.length),oversubscription=ts>0?clients.slice(ts):[];
+        const vacC=Math.max(0,ts-inCap.length),isOver=oversubscription.length>0,hasvac=vacC>0;
+        const badge=isOver
+          ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--red-dim);color:var(--red)">+${oversubscription.length} oversubscription</span>`
+          :hasvac
+          ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--amber-dim);color:var(--amber)">${vacC} vacant</span>`
+          :inCap.length>0
+          ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--green-dim);color:var(--green)">Full</span>`
+          :``;
+        const dots=[
+          ...inCap.map(c=>`<span title="${c.brand}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c.stage.includes('close')?'#2a9d8f':'#c97200'};margin:1px;flex-shrink:0"></span>`),
+          ...Array(vacC).fill(`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px dashed rgba(14,33,71,0.25);margin:1px;flex-shrink:0"></span>`),
+          ...(oversubscription.length?[`<span style="display:inline-block;width:1px;height:10px;background:rgba(214,59,74,0.4);margin:0 3px;flex-shrink:0"></span>`]:[]),
+          ...oversubscription.map(c=>`<span title="${c.brand} · Oversubscription" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(214,59,74,0.12);border:1.5px solid var(--red);margin:1px;flex-shrink:0"></span>`)
+        ].join('');
+        const nameTags=[
+          ...inCap.map(c=>`<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;background:${c.stage.includes('close')?'rgba(42,157,143,0.10)':'rgba(201,114,0,0.09)'};color:${c.stage.includes('close')?'#1a7a6a':'#8a4e00'};margin:1px 2px 1px 0;white-space:nowrap">${c.brand}</span>`),
+          ...oversubscription.map(c=>`<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;background:rgba(214,59,74,0.08);color:var(--red);margin:1px 2px 1px 0;white-space:nowrap;border:1px solid rgba(214,59,74,0.2)">${c.brand} W</span>`)
+        ].join('');
+        const rowBg=isOver?'background:rgba(214,59,74,0.018)':hasvac?'background:rgba(14,33,71,0.012)':'';
+        return`<div style="padding:7px 0;border-bottom:0.5px solid var(--border);${rowBg}"><div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:4px"><div style="font-size:10px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sub}</div><div style="font-size:11px;font-weight:800;color:var(--navy);white-space:nowrap">${inCap.length}/${ts||'?'}</div><div style="min-width:72px;text-align:right">${badge}</div></div><div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:3px">${dots}</div><div style="display:flex;flex-wrap:wrap">${nameTags}</div></div>`;
+      }).join('');
+    };
+    dotEl.innerHTML=pkgs.map(pkg=>{
+      const inv=byPkg[pkg]||{sold:[],vacant:[],pipeline:[]},soldC=inv.sold.length,pipeC=(inv.pipeline||[]).length,vacC=inv.vacant.length,totC=soldC+pipeC+vacC,pctSold=totC>0?Math.round(soldC/totC*100):0;
+      const dots=[...inv.sold.map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Closed" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#2a9d8f;margin:2px;cursor:pointer"></span>`),...(inv.pipeline||[]).map(x=>`<span title="${x.brand||x.name}: ${fmtMC(x.val)}M · Pipeline" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#c97200;margin:2px;cursor:pointer"></span>`),...inv.vacant.map(x=>`<span title="${x.name}: ${fmtMC(x.val)}M · Vacant" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:rgba(14,33,71,0.12);border:1px dashed rgba(14,33,71,0.3);margin:2px;cursor:pointer"></span>`)].join('');
+      const expandRows=buildExpandRows(pkg);
+      const uid='ex_'+dotId+'_'+pkg.replace(/[^a-z0-9]/gi,'_');
+      const toggleBtn=expandRows?`<button onclick="(function(btn,uid){const d=document.getElementById(uid);const open=d.style.display==='none';d.style.display=open?'block':'none';btn.textContent=open?'▲':'▼';})(this,'${uid}')" style="font-size:9px;padding:0 5px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--ink-muted);cursor:pointer;line-height:1.6;flex-shrink:0">▼</button>`:'';
+      return`<div style="margin-bottom:8px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:10px;font-weight:700;color:var(--navy)">${pkg}</span><span style="color:#2a9d8f;font-size:11px;font-weight:700">${soldC} Closed</span>${pipeC>0?`<span style="color:#c97200;font-size:11px;font-weight:700">${pipeC} Pipeline</span>`:''}<span style="color:var(--ink-muted);font-size:11px;font-weight:700">${vacC} Vacant</span><span style="font-size:10px;font-weight:800;color:#2a9d8f;padding:1px 6px;border-radius:4px;background:rgba(42,157,143,0.10)">${pctSold}%</span><span style="flex:1"></span>${toggleBtn}</div><div style="display:flex;align-items:center;flex-wrap:wrap">${dots}</div>${expandRows?`<div id="${uid}" style="display:none;margin-top:6px;padding:6px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">${expandRows}</div>`:''}</div>`;
+    }).join('');
+  };
   const invByPkg25={},invByPkg26={};
   fbInvRows.forEach(r=>{const pkg=String(r['Football Package Type']||'').trim(),name=String(r['Contract Name']||'').trim(),val=parseFloat(String(r['Total Contract Value']||'').replace(/,/g,''))||0,status=String(r['Actual Package Status']||'').trim(),brand=String(r['Brand: Brand Name']||'').trim(),fy=String(r['Contract']||'').trim();if(!pkg||!status)return;const isSold=status.toLowerCase().includes('close'),isPipeline=status.toLowerCase().includes('pipeline'),isFY26=fy.includes('26/27')||fy.includes('FY26'),target=isFY26?invByPkg26:invByPkg25;if(!target[pkg])target[pkg]={sold:[],vacant:[],pipeline:[]};const entry={name,val,brand};if(isSold)target[pkg].sold.push(entry);else if(isPipeline)target[pkg].pipeline.push(entry);else target[pkg].vacant.push(entry);});
-  renderInvCard('chartFbInventory25','fb-dot-grid-25',invByPkg25);
-  renderInvCard('chartFbInventory26','fb-dot-grid-26',invByPkg26);
+  renderInvCard('chartFbInventory25','fb-dot-grid-25',invByPkg25,'FY25/26');
+  renderInvCard('chartFbInventory26','fb-dot-grid-26',invByPkg26,'FY26/27');
   const ALL_PKG=['AIS','EPL','FAT','FAT - MT','MONO'],extraPkgs=[...new Set([...Object.keys(fbContractPkg25),...Object.keys(fbContractPkg26)])].filter(p=>!ALL_PKG.includes(p)),pkgAll=[...ALL_PKG,...extraPkgs];
   killChart('chartFbPackage');charts['chartFbPackage']=new Chart(document.getElementById('chartFbPackage'),{type:'bar',data:{labels:pkgAll,datasets:[{label:'FY25/26',data:pkgAll.map(p=>(fbContractPkg25[p]||0)/1e6),backgroundColor:'rgba(90,175,223,0.75)',borderRadius:4,borderSkipped:false,categoryPercentage:0.6,barPercentage:1.0},{label:'FY26/27',data:pkgAll.map(p=>(fbContractPkg26[p]||0)/1e6),backgroundColor:'#0e2147',borderRadius:4,borderSkipped:false,categoryPercentage:0.6,barPercentage:1.0}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:12,color:tColor,font:{size:11}}}},scales:{x:{grid:{display:false},ticks:{color:tColor,font:{weight:'600'}}},y:{grid:{color:gColor},ticks:{color:tColor,callback:v=>v+'M'},beginAtZero:true}}}});
   const brandAll=[...new Set([...Object.keys(fbBrandByContract25),...Object.keys(fbBrandByContract26)])];brandAll.sort((a,b)=>((fbBrandByContract26[b]||0)+(fbBrandByContract25[b]||0))-((fbBrandByContract26[a]||0)+(fbBrandByContract25[a]||0)));const top10=brandAll.slice(0,10);
@@ -531,8 +660,177 @@ function renderPipeline(rows,activePillars,activeStatuses,activeSPs){
   cardsEl.innerHTML=visSPs.map(sp=>{const spData=byPerson[sp];const totalSpDeals=visPillars.reduce((s,pil)=>s+visStatuses.reduce((s2,st)=>s2+spData[pil][st].length,0),0);const spVal=visPillars.reduce((s,pil)=>s+visStatuses.reduce((s2,st)=>s2+spData[pil][st].reduce((s3,it)=>s3+it.val,0),0),0);const closedSp=visPillars.reduce((s,pil)=>s+(visStatuses.includes('close deal')?spData[pil]['close deal'].length:0),0);const potSp=visPillars.reduce((s,pil)=>s+visStatuses.reduce((s2,st)=>s2+spData[pil][st].filter(it=>it.pot).length,0),0);const cols=visPillars.map((pil,idx)=>{const hex=PIL_COLOR[pil]||'#aab8c8',borderR=idx<visPillars.length-1?'border-right:1.5px solid var(--border);':'';const sections=visStatuses.map(stat=>{const cfg=STAT_CFG[stat],items=spData[pil][stat];const totalStatVal=items.reduce((s,it)=>s+it.val,0),potItems=items.filter(it=>it.pot);const statSummary=items.length>0?`<span style="margin-left:5px;font-size:10px;font-weight:700;color:${cfg.color};opacity:0.85">${items.length} Brand${items.length>1?'s':''}${totalStatVal>0?' · '+fmtM(totalStatVal)+'M':''}${potItems.length>0?' · ⭐'+potItems.length:''}</span>`:'';const itemsHtml=items.length===0?`<div style="font-size:11px;color:var(--ink-faint);padding:3px 0 4px">—</div>`:items.map(it=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)"><span style="font-size:11px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${it.pot?'⭐ ':''}${it.brand}</span>${it.val>0?`<span style="flex-shrink:0;font-size:10px;font-weight:700;color:${cfg.color};background:${cfg.bg};border:1px solid ${cfg.bdr};border-radius:4px;padding:1px 6px">${fmtM(it.val)}M</span>`:`<span style="flex-shrink:0;font-size:10px;color:var(--ink-faint)">—</span>`}</div>`).join('');return`<div style="margin-bottom:10px"><div style="display:flex;align-items:center;margin-bottom:5px"><div style="display:inline-block;font-size:8px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:${cfg.color};background:${cfg.bg};border:1px solid ${cfg.bdr};border-radius:3px;padding:2px 7px">${cfg.label}</div>${statSummary}</div>${itemsHtml}</div>`;}).join('');return`<div style="flex:1;min-width:130px;${borderR}display:flex;flex-direction:column"><div style="background:${hex};padding:8px 10px;text-align:center"><span style="font-size:10px;font-weight:700;color:#fff;display:block">${PIL_EMOJI[pil]||''} ${pil}</span></div><div style="padding:10px;flex:1">${sections}</div></div>`;}).join('');return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(14,33,71,0.07)"><div style="background:${SP_HDR[sp]};padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><div style="display:flex;align-items:center;gap:12px"><div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">${sp[0]}</div><div><div style="font-size:16px;font-weight:800;color:#fff">${sp.toUpperCase()}</div><div style="display:flex;align-items:center;gap:8px;margin-top:3px"><span style="font-size:10px;color:rgba(255,255,255,0.4)">Pipeline · ${totalSpDeals} deals${spVal>0?' · '+fmtM(spVal)+'M':''}</span>${potSp>0?`<span style="font-size:9px;font-weight:700;color:#ffe066;background:rgba(255,224,0,0.15);border:1px solid rgba(255,224,0,0.3);border-radius:99px;padding:1px 8px">⭐ ${potSp}</span>`:''}</div></div></div><div style="display:flex;gap:20px">${closedSp>0?`<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#00e5a0">${closedSp}</div><div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.1em;margin-top:2px">CLOSED</div></div>`:''}<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:#fff">${totalSpDeals}</div><div style="font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.1em;margin-top:2px">DEALS</div></div></div></div><div style="display:flex;overflow-x:auto;border-top:2px solid rgba(0,0,0,0.10)">${cols||'<div style="padding:24px;color:var(--ink-faint);font-size:12px;text-align:center;width:100%">No data</div>'}</div></div>`;}).join('')||'<div style="text-align:center;padding:32px;color:var(--ink-muted)">No salesperson selected</div>';
 }
 
+function renderPillarInv(data){
+  const el=document.getElementById('pilinv-content');if(!el)return;
+  if(!data){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--ink-muted)">No data</div>';return;}
+  try{
+  const{pillarPkgConfigRows=[],pillarClientRows=[]}=data;
+  if(!pillarPkgConfigRows.length&&!pillarClientRows.length){el.innerHTML='<div style="padding:32px;text-align:center;color:var(--ink-muted)">No inventory data found — ตรวจสอบ Pillar Package Config และ Pillar Clients sheet</div>';return;}
+  const h=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
+  // Parse config headers
+  const cfgHd=pillarPkgConfigRows.length?Object.keys(pillarPkgConfigRows[0]):[];
+  const cfgPIL=cfgHd.find(c=>h(c).includes('pillar'))||cfgHd[0]||'';
+  const cfgPK=cfgHd.find(c=>h(c).includes('package'))||cfgHd[1]||'';
+  const cfgCN=cfgHd.find(c=>h(c).includes('contractname'))||cfgHd.find(c=>h(c).includes('name')&&!h(c).includes('brand')&&!h(c).includes('package'))||cfgHd[2]||'';
+  const cfgSL=cfgHd.find(c=>h(c).includes('slot'))||cfgHd[4]||'';
+  const cfgIV=cfgHd.find(c=>h(c).includes('inventory'))||cfgHd[5]||'';
+  // slotMap: `pillar|pkg|contractName` → slots
+  // invValMap: `pillar|pkg|contractName` → total inventory value
+  const slotMap={},invValMap={};
+  pillarPkgConfigRows.forEach(r=>{
+    const pil=String(r[cfgPIL]||'').trim(),pkg=String(r[cfgPK]||'').trim(),cn=String(r[cfgCN]||'').trim(),sl=parseInt(r[cfgSL])||0;
+    const iv=parseFloat(String(r[cfgIV]||'').replace(/,/g,''))||0;
+    if(pil&&pkg&&cn){if(sl>0)slotMap[`${pil}|${pkg}|${cn}`]=sl;if(iv>0)invValMap[`${pil}|${pkg}|${cn}`]=iv;}
+  });
+  // Parse client headers
+  const clHd=pillarClientRows.length?Object.keys(pillarClientRows[0]):[];
+  const clPIL=clHd.find(c=>h(c).includes('pillar'))||clHd[0]||'';
+  const clPK=clHd.find(c=>h(c).includes('package'))||clHd[1]||'';
+  const clCN=clHd.find(c=>h(c).includes('contractname')||h(c).includes('name')&&!h(c).includes('brand'))||clHd[2]||'';
+  const clVAL=clHd.find(c=>h(c).includes('value')||h(c).includes('total'))||clHd[3]||'';
+  const clBR=clHd.find(c=>h(c).includes('brand'))||clHd[4]||'';
+  const clST=clHd.find(c=>h(c).includes('stage')||h(c).includes('status'))||clHd[5]||'';
+  // clientMap: `pillar|pkg|contractName` → [{brand,stage,val}]
+  // unassigned: `pillar` → [{brand}]
+  const clientMap={},unassigned={};
+  pillarClientRows.forEach(r=>{
+    const pil=String(r[clPIL]||'').trim(),pkg=String(r[clPK]||'').trim(),cn=String(r[clCN]||'').trim(),brand=String(r[clBR]||'').trim(),stage=String(r[clST]||'').toLowerCase().trim();
+    const val=parseFloat(String(r[clVAL]||'').replace(/,/g,''))||0;
+    if(!pil||!brand)return;
+    if(!pkg||!cn){if(!unassigned[pil])unassigned[pil]=[];unassigned[pil].push({brand,stage,val});return;}
+    const k=`${pil}|${pkg}|${cn}`;
+    if(!clientMap[k])clientMap[k]=[];
+    clientMap[k].push({brand,stage,val});
+  });
+  Object.keys(clientMap).forEach(k=>clientMap[k].sort((a,b)=>(a.stage.includes('close')?0:1)-(b.stage.includes('close')?0:1)));
+  // Group by pillar
+  const allKeys=[...new Set([...Object.keys(slotMap),...Object.keys(clientMap)])];
+  const byPillar={};
+  allKeys.forEach(k=>{const pil=k.split('|')[0];if(!byPillar[pil])byPillar[pil]=[];byPillar[pil].push(k);});
+  const PIL_COLOR={'Muay Thai':'#e05c5c','Running':'#c97200','E-Sport':'#7b5ea7','eSports & Game':'#7b5ea7','Entertainment':'#d4589a','AG Volleyball':'#2aad8f'};
+  const PIL_EMOJI={'Muay Thai':'🥊','Running':'🏃','E-Sport':'🎮','Entertainment':'🎤','AG Volleyball':'🏐'};
+  const PIL_ORD=['Muay Thai','Running','E-Sport','Entertainment','AG Volleyball'];
+  const pillars=Object.keys(byPillar).sort((a,b)=>{const ia=PIL_ORD.indexOf(a),ib=PIL_ORD.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+  // Revenue by pillar
+  const revTotal={},revPipeline={},revClosed={};
+  pillars.forEach(pil=>{revTotal[pil]=0;revPipeline[pil]=0;revClosed[pil]=0;});
+  pillarClientRows.forEach(r=>{
+    const pil=String(r[clPIL]||'').trim(),stage=String(r[clST]||'').toLowerCase().trim();
+    const val=parseFloat(String(r[clVAL]||'').replace(/,/g,''))||0;
+    if(!pil||!val)return;
+    revTotal[pil]=(revTotal[pil]||0)+val;
+    if(stage.includes('close'))revClosed[pil]=(revClosed[pil]||0)+val;
+    else revPipeline[pil]=(revPipeline[pil]||0)+val;
+  });
+  // Build expand rows per contract name key
+  const buildExpandRows=(key)=>{
+    const ts=slotMap[key]||0,clients=clientMap[key]||[];
+    const inCap=clients.slice(0,ts||clients.length),oversubscription=ts>0?clients.slice(ts):[];
+    const vacC=Math.max(0,ts-inCap.length),isOver=oversubscription.length>0,hasvac=vacC>0;
+    const cn=key.split('|').slice(2).join('|');
+    const badge=isOver
+      ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--red-dim);color:var(--red)">+${oversubscription.length} oversubscription</span>`
+      :hasvac
+      ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--amber-dim);color:var(--amber)">${vacC} vacant</span>`
+      :inCap.length>0
+      ?`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--green-dim);color:var(--green)">Full</span>`
+      :``;
+    const dots=[
+      ...inCap.map(c=>`<span title="${c.brand}" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c.stage.includes('close')?'#2a9d8f':'#c97200'};margin:1px;flex-shrink:0"></span>`),
+      ...Array(vacC).fill(`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px dashed rgba(14,33,71,0.25);margin:1px;flex-shrink:0"></span>`),
+      ...(oversubscription.length?[`<span style="display:inline-block;width:1px;height:10px;background:rgba(214,59,74,0.4);margin:0 3px;flex-shrink:0"></span>`]:[]),
+      ...oversubscription.map(c=>`<span title="${c.brand} · Oversubscription" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:rgba(214,59,74,0.12);border:1.5px solid var(--red);margin:1px;flex-shrink:0"></span>`)
+    ].join('');
+    const nameTags=[
+      ...inCap.map(c=>`<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;background:${c.stage.includes('close')?'rgba(42,157,143,0.10)':'rgba(201,114,0,0.09)'};color:${c.stage.includes('close')?'#1a7a6a':'#8a4e00'};margin:1px 2px 1px 0;white-space:nowrap">${c.brand}</span>`),
+      ...oversubscription.map(c=>`<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;background:rgba(214,59,74,0.08);color:var(--red);margin:1px 2px 1px 0;white-space:nowrap;border:1px solid rgba(214,59,74,0.2)">${c.brand} W</span>`)
+    ].join('');
+    const rowBg=isOver?'background:rgba(214,59,74,0.018)':hasvac?'background:rgba(14,33,71,0.012)':'';
+    return`<div style="padding:7px 0;border-bottom:0.5px solid var(--border);${rowBg}"><div style="display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:4px"><div style="font-size:10px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cn}</div><div style="font-size:11px;font-weight:800;color:var(--navy);white-space:nowrap">${inCap.length}/${ts||'?'}</div><div style="min-width:72px;text-align:right">${badge}</div></div><div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:3px">${dots}</div><div style="display:flex;flex-wrap:wrap">${nameTags}</div></div>`;
+  };
+  // Build pillar card
+  const renderPillarCard=(pil)=>{
+    const keys=byPillar[pil]||[];
+    const col=PIL_COLOR[pil]||'#aab8c8',emoji=PIL_EMOJI[pil]||'📦';
+    // Group by pkg
+    const byPkg={};
+    keys.forEach(k=>{const pkg=k.split('|')[1];if(!byPkg[pkg])byPkg[pkg]=[];byPkg[pkg].push(k);});
+    const pkgRows=Object.entries(byPkg).map(([pkg,ks])=>{
+      const totSlots=ks.reduce((s,k)=>s+(slotMap[k]||0),0);
+      const allClients=ks.flatMap(k=>clientMap[k]||[]);
+      const totInCap=ks.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];return s+Math.min(cl.length,ts||cl.length);},0);
+      const totWait=ks.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];return s+(ts>0?Math.max(0,cl.length-ts):0);},0);
+      const totVac=Math.max(0,totSlots-totInCap);
+      const closedC=allClients.filter(c=>c.stage.includes('close')).length;
+      const pipeC=allClients.filter(c=>!c.stage.includes('close')&&c.stage).length;
+      const allWait=[];let totalVac=0;
+      ks.forEach(k=>{
+        const ts=slotMap[k]||0,cl=clientMap[k]||[];
+        const inCap=cl.slice(0,ts||cl.length),wait=ts>0?cl.slice(ts):[];
+        allWait.push(...wait);
+        totalVac+=Math.max(0,ts-inCap.length);
+      });
+      const uid='pi_'+pil.replace(/[^a-z0-9]/gi,'_')+'_'+pkg.replace(/[^a-z0-9]/gi,'_');
+      const expandContent=ks.map(k=>buildExpandRows(k)).join('');
+      const toggleBtn=expandContent?`<button onclick="(function(btn,uid){const d=document.getElementById(uid);const open=d.style.display==='none';d.style.display=open?'block':'none';btn.textContent=open?'▲':'▼';})(this,'${uid}')" style="font-size:9px;padding:0 5px;border:1px solid var(--border);border-radius:3px;background:var(--surface);color:var(--ink-muted);cursor:pointer;line-height:1.6;flex-shrink:0">▼</button>`:'';
+      // Stacked number bar
+      const total=totSlots+(totWait>0?totWait:0);
+      const barTotal=Math.max(total,totInCap+totalVac+allWait.length,1);
+      const pClosed=(closedC/barTotal*100).toFixed(1);
+      const pPipe=((pipeC)/barTotal*100).toFixed(1);
+      const pVac=(totalVac/barTotal*100).toFixed(1);
+      const pWait=(allWait.length/barTotal*100).toFixed(1);
+      const stackedBar=`<div style="display:flex;height:22px;border-radius:4px;overflow:hidden;flex:1;min-width:0">
+        ${closedC>0?`<div style="width:${pClosed}%;background:#2a9d8f;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;min-width:${closedC>0&&pClosed>8?'auto':'0'}">${parseFloat(pClosed)>8?closedC+' Closed':closedC>0?closedC:''}</div>`:''}
+        ${pipeC>0?`<div style="width:${pPipe}%;background:#c97200;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden">${parseFloat(pPipe)>8?pipeC+' Pipeline':pipeC>0?pipeC:''}</div>`:''}
+        ${totalVac>0?`<div style="width:${pVac}%;background:rgba(14,33,71,0.08);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--ink-muted);white-space:nowrap;overflow:hidden">${parseFloat(pVac)>8?totalVac+' Vacant':totalVac>0?totalVac:''}</div>`:''}
+        ${allWait.length>0?`<div style="width:2px;background:rgba(214,59,74,0.5);flex-shrink:0"></div><div style="width:${pWait}%;background:rgba(214,59,74,0.12);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--red);white-space:nowrap;overflow:hidden;border:1px solid rgba(214,59,74,0.3)">+${allWait.length}</div>`:''}
+      </div>`;
+      return`<div style="margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:11px;font-weight:800;color:var(--navy);min-width:0;flex-shrink:0">${pkg}</span>${stackedBar}<span style="font-size:11px;color:var(--ink-muted);white-space:nowrap;flex-shrink:0">${totSlots} slots</span>${toggleBtn}</div>${expandContent?`<div id="${uid}" style="display:none;margin-top:6px;padding:6px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">${expandContent}</div>`:''}</div>`;
+    }).join('');
+    // Unassigned section
+    const unass=unassigned[pil]||[];
+    const unassHtml=unass.length?`<div style="margin-top:10px;padding:8px 10px;background:rgba(201,114,0,0.06);border-radius:6px;border:1px solid rgba(201,114,0,0.2)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">⚠ Package unassigned (${unass.length} brands)</div><div style="display:flex;flex-wrap:wrap;gap:3px">${unass.map(c=>`<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 8px;border-radius:3px;background:rgba(201,114,0,0.08);color:#8a4e00;white-space:nowrap">${c.brand}</span>`).join('')}</div></div>`:'';
+    const fmtB=v=>{if(!v)return'—';if(v>=1e6)return Math.round(v/1e6).toLocaleString()+'M';if(v>=1e3)return Math.round(v/1e3).toLocaleString()+'K';return v;};
+    const pkgEntries=Object.entries(byPkg);
+    const isMultiPkg=pkgEntries.length>1;
+    // Pillar-level totals (shown as summary row when multi-pkg)
+    const pilTotInv=keys.reduce((s,k)=>s+(invValMap[k]||0),0);
+    const pilClosedVal=keys.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];const inCap=cl.slice(0,ts||cl.length);return s+inCap.filter(c=>c.stage.includes('close')).reduce((s2,c)=>s2+(c.val||0),0);},0);
+    const pilPipeVal=keys.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];const inCap=cl.slice(0,ts||cl.length);return s+inCap.filter(c=>!c.stage.includes('close')).reduce((s2,c)=>s2+(c.val||0),0);},0);
+    const pilRemVal=Math.max(0,pilTotInv-pilClosedVal-pilPipeVal);
+    const kpiCell=(val,lbl,bg,c,bdr,big=false)=>`<div style="background:${bg};border:1px solid ${bdr};border-radius:6px;padding:${big?'10px 8px':'6px 8px'};text-align:center"><div style="font-size:${big?'18px':'13px'};font-weight:800;color:${c};line-height:1">${val}</div><div style="font-size:9px;font-weight:600;color:${c};opacity:.75;margin-top:3px;text-transform:uppercase;letter-spacing:.05em">${lbl}</div></div>`;
+    const summaryRow=`<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:${isMultiPkg?'2px':'1px'} solid var(--border)"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${kpiCell(fmtB(pilTotInv),'Total Package Value','var(--surface-2)','var(--navy)','var(--border)',true)}${kpiCell(fmtB(pilClosedVal),'Closed','var(--green-dim)','var(--green)','rgba(0,168,120,0.2)',true)}${kpiCell(fmtB(pilPipeVal),'Pipeline','var(--amber-dim)','var(--amber)','rgba(201,114,0,0.2)',true)}${kpiCell(fmtB(pilRemVal),'Vacant','rgba(14,33,71,0.04)','var(--ink-muted)','var(--border)',true)}</div></div>`;
+    // per-pkg text rows (multi-pkg only)
+    const kpiRows=isMultiPkg?`<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:0.5px solid var(--border)">${pkgEntries.map(([pkg,ks])=>{
+      const totInv=ks.reduce((s,k)=>s+(invValMap[k]||0),0);
+      const closedVal=ks.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];const inCap=cl.slice(0,ts||cl.length);return s+inCap.filter(c=>c.stage.includes('close')).reduce((s2,c)=>s2+(c.val||0),0);},0);
+      const pipeVal=ks.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];const inCap=cl.slice(0,ts||cl.length);return s+inCap.filter(c=>!c.stage.includes('close')).reduce((s2,c)=>s2+(c.val||0),0);},0);
+      const remVal=Math.max(0,totInv-closedVal-pipeVal);
+      return`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:11px;font-weight:600;color:var(--ink-mid);min-width:110px;flex-shrink:0">${pkg}</span><span style="font-size:11px;color:var(--ink-muted)">${fmtB(totInv)}</span><span style="font-size:10px;color:var(--ink-faint)">·</span>${closedVal>0?`<span style="font-size:11px;color:var(--green)">${fmtB(closedVal)} closed</span><span style="font-size:10px;color:var(--ink-faint)">·</span>`:''}${pipeVal>0?`<span style="font-size:11px;color:var(--amber)">${fmtB(pipeVal)} pipeline</span>`:''}${remVal>0?`<span style="font-size:10px;color:var(--ink-faint)">·</span><span style="font-size:11px;color:var(--ink-muted)">${fmtB(remVal)} vacant</span>`:''}</div>`;
+    }).join('')}</div>`:'';
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid ${col};border-radius:10px;overflow:hidden;padding:16px 18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)"><span style="font-size:16px">${emoji}</span><span style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--navy)">${pil}</span></div>${summaryRow}${kpiRows}${pkgRows}${unassHtml}</div>`;
+  };
+  const legend=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px"><span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-muted)"><span style="width:14px;height:10px;border-radius:2px;background:#2a9d8f;display:inline-block"></span>Closed</span><span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-muted)"><span style="width:14px;height:10px;border-radius:2px;background:#c97200;display:inline-block"></span>Pipeline</span><span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-muted)"><span style="width:14px;height:10px;border-radius:2px;background:rgba(14,33,71,0.08);border:0.5px solid var(--border);display:inline-block"></span>Vacant</span><span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--ink-muted)"><span style="width:14px;height:10px;border-radius:2px;background:rgba(214,59,74,0.12);border:1px solid rgba(214,59,74,0.3);display:inline-block"></span>Oversubscription · click ▼ to view details</span></div>`;
+  const col1=pillars.filter((_,i)=>i%2===0).map(renderPillarCard).join('');
+  const col2=pillars.filter((_,i)=>i%2===1).map(renderPillarCard).join('');
+  el.innerHTML=legend+`<div style="display:flex;gap:16px;align-items:flex-start"><div style="flex:1;display:flex;flex-direction:column;gap:16px">${col1}</div><div style="flex:1;display:flex;flex-direction:column;gap:16px">${col2}</div></div>`;
+  // Compute correct capacity-capped pipeline using already-built slotMap + clientMap
+  const truePipe={};
+  pillars.forEach(pil=>{
+    const keys=byPillar[pil]||[];
+    const pv=keys.reduce((s,k)=>{const ts=slotMap[k]||0,cl=clientMap[k]||[];const inCap=cl.slice(0,ts||cl.length);return s+inCap.filter(c=>!c.stage.includes('close')).reduce((s2,c)=>s2+(c.val||0),0);},0);
+    truePipe[pil]=pv;
+  });
+  window._pillarPipeline=truePipe;
+  // Re-render forecast card with correct pipeline
+  const fcEl=document.getElementById('forecast-pillar-card');
+  if(fcEl&&window._reRenderForecast)window._reRenderForecast();
+  }catch(err){el.innerHTML=`<div style="padding:32px;text-align:center;color:var(--red)">⚠ Error: ${err.message}</div>`;console.error('renderPillarInv error:',err);}
+}
+
 function refreshData(){const btn=document.getElementById('refresh-btn');if(btn){btn.textContent='↻ Refreshing...';btn.disabled=true;}loadDashboard().finally(()=>{if(btn){btn.textContent='↺ Refresh';btn.disabled=false;}});}
-function showPage(name,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');el.classList.add('active');if(name==='football'){setTimeout(()=>{if(window._fbData)renderFootball(window._fbData);},80);}if(name==='mgmt'){setTimeout(()=>initMgmtPage(),80);}if(name==='pipeline'){setTimeout(()=>{if(window._pipelineRows&&window._pipelineRows.length)renderPipeline(window._pipelineRows,new Set(),new Set(),new Set());},80);}}
+function showPage(name,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');el.classList.add('active');if(name==='football'){setTimeout(()=>{if(window._fbData)renderFootball(window._fbData);},80);}if(name==='mgmt'){setTimeout(()=>initMgmtPage(),80);}if(name==='pilinv'){setTimeout(()=>renderPillarInv(window._pillarInvData),80);}if(name==='pipeline'){setTimeout(()=>{if(window._pipelineRows&&window._pipelineRows.length)renderPipeline(window._pipelineRows,new Set(),new Set(),new Set());},80);}}
 function applyScale(){const DESIGN=1200,MIN=960,vw=window.innerWidth;if(vw>=DESIGN){document.body.style.transform='';document.body.style.width='';document.documentElement.style.height='';}else{const scale=Math.max(vw/DESIGN,MIN/DESIGN);document.body.style.transform=`scale(${scale})`;document.body.style.width=DESIGN+'px';requestAnimationFrame(()=>{document.documentElement.style.height=(document.body.scrollHeight*scale)+'px';});}}
 window.addEventListener('resize',applyScale);applyScale();
 loadDashboard();
