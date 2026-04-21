@@ -119,7 +119,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
   <div class="nav-tab" onclick="showPage('football',this)">⚽ &nbsp;Football Sales Revenue & Contracts</div>
   <div class="nav-tab" onclick="showPage('mgmt',this)">📊 &nbsp;Football Revenue Overview<br><span style="padding-left:20px">(Management View)</span></div>
-  <div class="nav-tab wip-tab" onclick="showPage('pilinv',this)">📦 &nbsp;Package Inventory by Pillar</div>
+  <div class="nav-tab" onclick="showPage('pilinv',this)">📦 &nbsp;Package Inventory by Pillar</div>
   <div class="nav-tab" onclick="showPage('pipeline',this)">🎯 &nbsp;Client Pipeline Overview</div>
 </div>
 </div>
@@ -135,7 +135,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div class="sec-hd"><div class="sec-title">Revenue by Pillar</div><div class="sec-sub">YTD Actual vs Target</div></div>
   <div class="charts-2">
     <div class="chart-card"><div class="chart-card-title">Actual vs Target</div><div class="chart-card-sub">Horizontal bars</div><div class="chart-wrap" style="height:260px"><canvas id="chartPillarOverview"></canvas></div></div>
-    <div class="chart-card"><div class="chart-card-title">Revenue Forecast by Pillar</div><div class="chart-card-sub">Actual + Pipeline (capacity-capped) vs Target</div><div id="forecast-pillar-card" style="margin-top:12px"></div></div>
+    <div class="chart-card"><div class="chart-card-title">Revenue Forecast by Pillar</div><div class="chart-card-sub">Actual + Proposal stage vs Target</div><div id="forecast-pillar-card" style="margin-top:12px"></div></div>
   </div>
   <div id="pillar-brand-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px"></div>
   <div class="sec-hd"><div class="sec-title">Individual Scorecards</div><div class="sec-sub">YTD Performance</div></div>
@@ -279,6 +279,23 @@ async function loadDashboard(){
       fetchSheetRange(TAB_PIL_CLIENTS,'A4:F').catch(()=>[])
     ]);
     window._pipelineRows=pipelineRows;
+    // Compute proposal pipeline by pillar from Sales Pipeline sheet
+    (()=>{
+      if(!pipelineRows.length)return;
+      const hdrs=Object.keys(pipelineRows[0]);
+      const fc=(...keys)=>hdrs.find(h=>keys.some(k=>h.toLowerCase().includes(k.toLowerCase())))||null;
+      const CPIL=fc('pillar','media type','sport'),CSTAT=fc('contact stage','status','stage'),CVAL=fc('final total contract value','contract value','total contract','pipeline value','total amount');
+      if(!CPIL||!CSTAT||!CVAL)return;
+      const ESPORT_KEYS=['E-Sport','eSports & Game','eSports & Games','e-sport','esports'];
+      const prop={};
+      pipelineRows.forEach(r=>{
+        let pil=String(r[CPIL]||'').trim(),stat=String(r[CSTAT]||'').toLowerCase().trim(),val=parseFloat(String(r[CVAL]||'').replace(/,/g,''))||0;
+        if(!pil||stat!=='proposal'||val<=0)return;
+        if(ESPORT_KEYS.some(k=>pil.toLowerCase()===k.toLowerCase()))pil='eSports & Games';
+        prop[pil]=(prop[pil]||0)+val;
+      });
+      window._proposalByPillar=prop;
+    })();
     if(!rawRows.length)throw new Error('Raw data tab returned 0 rows.');
     const sample=rawRows[0];
     const missing=[COL_REVENUE,COL_SALES,COL_PILLAR,COL_BRAND,COL_MONTH].filter(col=>!(col in sample));
@@ -416,28 +433,26 @@ async function loadDashboard(){
     window._reRenderForecast=(()=>{
       const render=()=>{
       const fcEl=document.getElementById('forecast-pillar-card');if(!fcEl)return;
-      const pipe=window._pillarPipeline||{};
+      const pipe=window._proposalByPillar||{};
       const fmtMF=v=>v>=1e6?Math.round(v/1e6).toLocaleString()+'M':v>0?Math.round(v/1e3)+'K':'—';
       const PIL_ORDER=['Football','Muay Thai','Running','Talent Management','eSports & Game','eSports & Games','Global Rights'];
-      // Build pillar list from all sources — use actual pipe keys so E-Sport etc. match exactly
-      const allPils=[...new Set([...Object.keys(targetByPillar),...Object.keys(byPillar),...Object.keys(pipe)])].filter(p=>p!=='Other'&&p!=='Others'&&p!=='total'&&p!=='Total'&&p!=='E-Sport');
+      const allPils=[...new Set([...Object.keys(targetByPillar),...Object.keys(byPillar),...Object.keys(pipe)])].filter(p=>p!=='Other'&&p!=='Others'&&p!=='total'&&p!=='Total'&&p!=='E-Sport'&&p!=='AG Volleyball');
       allPils.sort((a,b)=>{const ia=PIL_ORDER.indexOf(a),ib=PIL_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
       allPils.sort((a,b)=>{const ia=PIL_ORDER.indexOf(a),ib=PIL_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
       const rows=allPils.map(pil=>{
         const actual=(byPillar[pil]||0)+(pil==='eSports & Game'?(byPillar['eSports & Games']||0):(pil==='eSports & Games'?(byPillar['eSports & Game']||0):0));
-        const pipeline=pipe[pil]||(pil==='eSports & Game'||pil==='eSports & Games'?pipe['E-Sport']:0)||0;
+        const pipeline=(pipe[pil]||0)+(pil==='eSports & Game'?(pipe['eSports & Games']||0):(pil==='eSports & Games'?(pipe['eSports & Game']||0):0));
         const target=targetByPillar[pil]||0;
-        const isFb=pil==='Football';
-        const projected=isFb?actual:(actual+pipeline);
+        const projected=actual+pipeline;
         const gap=target>0?(target-projected):0;
         const pct=target>0?Math.min(Math.round(projected/target*100),999):0;
         const col=pillarColors[pil]||'#aab8c8';
         const barActPct=target>0?Math.min(actual/target*100,100).toFixed(1):0;
         const barProjPct=target>0?Math.min(projected/target*100,100).toFixed(1):100;
         const gapCol=gap<=0?'var(--green)':gap/target<0.2?'var(--amber)':'var(--red)';
-        const pipeHtml=isFb
-          ?`<span style="font-size:10px;color:var(--ink-muted);font-style:italic">Pipeline TBD</span>`
-          :`<span style="font-size:11px;font-weight:700;color:#c97200">+${fmtMF(pipeline)}</span><span style="font-size:10px;color:var(--ink-muted)"> pipeline</span>`;
+        const pipeHtml=pipeline>0
+          ?`<span style="font-size:11px;font-weight:700;color:#c97200">+${fmtMF(pipeline)}</span><span style="font-size:10px;color:var(--ink-muted)"> proposal</span>`
+          :`<span style="font-size:10px;color:var(--ink-muted)">no proposal</span>`;
         return`<div style="margin-bottom:12px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
             <div style="display:flex;align-items:center;gap:6px">
@@ -447,7 +462,7 @@ async function loadDashboard(){
               ${pipeHtml}
             </div>
             <div style="display:flex;align-items:baseline;gap:5px">
-              <span style="font-size:12px;font-weight:800;color:var(--navy)">${isFb?fmtMF(actual)+'*':fmtMF(projected)}</span>
+              <span style="font-size:12px;font-weight:800;color:var(--navy)">${fmtMF(projected)}</span>
               ${target>0?`<span style="font-size:10px;font-weight:700;color:${gapCol}">${gap<=0?'✓ On track':'−'+fmtMF(gap)+' gap'}</span>`:''}
             </div>
           </div>
@@ -458,7 +473,7 @@ async function loadDashboard(){
           ${target>0?`<div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:9px;color:var(--ink-muted)">${pct}% of target</span><span style="font-size:9px;color:var(--ink-muted)">${fmtMF(target)} target</span></div>`:''}
         </div>`;
       }).join('');
-      fcEl.innerHTML=rows+`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:9px;color:var(--ink-faint)">* Football pipeline TBD · bar = actual only · dark = actual · light = projected</div>`;
+      fcEl.innerHTML=rows+`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:9px;color:var(--ink-faint)">Pipeline = Proposal stage only (from Sales Pipeline) · dark bar = actual · light bar = actual + proposal</div>`;
       };render();return render;
     })();
     const brandLabelPlugin={id:'brandLabels',afterDatasetsDraw(chart){const{ctx,scales:{x,y}}=chart;ctx.save();chart.getDatasetMeta(0).data.forEach((bar,i)=>{const val=allBrandsAsc[i][1],pct=(val/totalRevenue*100).toFixed(1),label=fmtM(val)+'M  '+pct+'%';ctx.font='600 10px Manrope,sans-serif';ctx.fillStyle='rgba(14,33,71,0.65)';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(label,bar.x+6,bar.y);});ctx.restore();}};
