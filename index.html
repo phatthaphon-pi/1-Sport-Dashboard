@@ -656,7 +656,7 @@ async function loadDashboard(){
       const COL_FB_PKG='Football Package Type',COL_FB_BRAND='Brand: Brand Name',COL_FB_MONTH='Format Month',COL_FB_REV='Total Amount (after SAC)',COL_FB_CONTRACT='Contract',COL_FB_REV_TYPE='Revenue type';
       let fbTarget25=513200000,fbTarget26=688300000;
       const fbActByContract={},fbContractPkg25={},fbContractPkg26={},fbBrandByContract25={},fbBrandByContract26={};
-      const ALL_TIMELINE_MONTHS=['Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25','Sep-25','Oct-25','Nov-25','Dec-25','Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26','Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26'];
+      const ALL_TIMELINE_MONTHS=['Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25','Sep-25','Oct-25','Nov-25','Dec-25','Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26','Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26','Jan-27','Feb-27','Mar-27','Apr-27','May-27','Jun-27','Jul-27','Aug-27','Sep-27','Oct-27','Nov-27','Dec-27'];
       const byMonthContract={},byMonthPipeline={},byBrandMonthContract={},byBrandMonthPipeline={},brandPkgType={},pipelineBrandPkgType={};
       const tgtByContractPkg={};let tgtFY25=0,tgtFY26=0;
       fbTargetRows.forEach(r=>{const contract=String(r['Contract']||'').trim(),pkg=String(r['Package Type']||'').trim(),val=parseFloat(r['Total Package Value'])||0;if(!contract||!pkg||val<=0)return;if(contract.toLowerCase().includes('total')||contract.toLowerCase().includes('grand'))return;if(!tgtByContractPkg[contract])tgtByContractPkg[contract]={};tgtByContractPkg[contract][pkg]=(tgtByContractPkg[contract][pkg]||0)+val;if(contract.includes('25'))tgtFY25+=val;else tgtFY26+=val;});
