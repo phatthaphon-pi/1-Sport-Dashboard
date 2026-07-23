@@ -391,12 +391,15 @@ async function loadDashboard(){
     (()=>{
       const fbData=window._fbData||{};
       const byMonthPipeline=fbData.byMonthPipeline||{};
-      // Sum all football pipeline across all months and contracts
+      // Sum football pipeline for 2026 only (exclude 2027)
       let totalFbPipeline=0;
       Object.keys(byMonthPipeline).forEach(m=>{
-        Object.keys(byMonthPipeline[m]).forEach(contract=>{
-          totalFbPipeline+=byMonthPipeline[m][contract]||0;
-        });
+        // Only count months ending with '-26'
+        if(m.endsWith('-26')){
+          Object.keys(byMonthPipeline[m]).forEach(contract=>{
+            totalFbPipeline+=byMonthPipeline[m][contract]||0;
+          });
+        }
       });
       const projected=totalRevenue+totalFbPipeline;
       const projGap=totalTarget-projected;
@@ -412,11 +415,15 @@ async function loadDashboard(){
     window._reRenderProjected=(()=>{
       const fbData=window._fbData||{};
       const byMonthPipeline=fbData.byMonthPipeline||{};
+      // Sum football pipeline for 2026 only (exclude 2027)
       let totalFbPipeline=0;
       Object.keys(byMonthPipeline).forEach(m=>{
-        Object.keys(byMonthPipeline[m]).forEach(contract=>{
-          totalFbPipeline+=byMonthPipeline[m][contract]||0;
-        });
+        // Only count months ending with '-26'
+        if(m.endsWith('-26')){
+          Object.keys(byMonthPipeline[m]).forEach(contract=>{
+            totalFbPipeline+=byMonthPipeline[m][contract]||0;
+          });
+        }
       });
       const projected=totalRevenue+totalFbPipeline;
       const projGap=totalTarget-projected;
