@@ -218,6 +218,25 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
     <div style="height:300px;margin-bottom:20px"><canvas id="chartFbTimeline"></canvas></div>
     <div style="overflow-x:auto"><table id="fb-timeline-table" style="width:100%;border-collapse:collapse;font-size:10px;min-width:900px"><thead id="fb-table-head"></thead><tbody id="fb-table-body"></tbody></table></div>
   </div>
+
+  <div style="margin-top:40px">
+    <div class="sec-hd" style="margin-bottom:20px">
+      <div class="sec-title">Monthly Football Revenue Trend · 2024–2026</div>
+      <div class="sec-sub">Year-over-year comparison</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="chart-card">
+        <div class="chart-card-title">Small Multiples View</div>
+        <div class="chart-card-sub">Each year displayed separately</div>
+        <div id="fb-monthly-small-multiples" style="margin-top:16px"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Line Overlay View</div>
+        <div class="chart-card-sub">All years overlaid for comparison</div>
+        <div style="height:420px;margin-top:16px"><canvas id="chartFbMonthlyOverlay"></canvas></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="page" id="page-mgmt">
@@ -280,6 +299,7 @@ const TAB_PIL_PKG_CONFIG='[For DB] Pillar Package Config';
 const TAB_PIL_CLIENTS='[For DB] Pillar Clients';
 const TAB_PIPELINE_SLA='[For DB] Sales Pipeline SLA';
 const TAB_BRAND_STATUS_TRACKER='[For DB] Brand Status Tracker';
+const TAB_MONTHLY_FB_ACT_REV='[For DB] Monthly Football ACT Rev';
 const COL_REVENUE='Total Amount (after SAC)',COL_SALES='Sales Rep 1: Sales Rep Name',COL_PILLAR='Media Type';
 const COL_BRAND='Brand: Brand Name',COL_MONTH='Format Month',COL_QUARTER='Quarter';
 const COL_TYPE='Type',COL_AGENCY_TYPE='Agency type',TARGET_COL='Total';
@@ -312,7 +332,7 @@ function normalizeSp(raw){const m=raw.match(/^(.*?\([^)]+\).*?)\s*\([^)]*(?:Team
 async function loadDashboard(){
   try{
     document.getElementById('loading-screen').style.display='flex';
-    const[rawRows,spRows,pillarRows,rawRows2025,rawRows2024,fbTargetRows,fbActRows,fbActPillarClientRows,fbInvRows,actRows,pipelineRows,fbInvPillarRows,pkgConfigRows,fbClientRows,pillarPkgConfigRows,pillarClientRows,spQTargetRows,pipelineRowsNew,slaRules,brandStatusTrackerRows]=await Promise.all([
+    const[rawRows,spRows,pillarRows,rawRows2025,rawRows2024,fbTargetRows,fbActRows,fbActPillarClientRows,fbInvRows,actRows,pipelineRows,fbInvPillarRows,pkgConfigRows,fbClientRows,pillarPkgConfigRows,pillarClientRows,spQTargetRows,pipelineRowsNew,slaRules,brandStatusTrackerRows,monthlyFbRevRows]=await Promise.all([
       fetchSheet(TAB_RAW),fetchSheet(TAB_TARGET_SP),fetchSheet(TAB_TARGET_PIL),
       fetchSheet(TAB_RAW_2025).catch(()=>[]),fetchSheet(TAB_RAW_2024).catch(()=>[]),
       fetchSheet(TAB_FB_TARGET).catch(()=>[]),fetchSheet(TAB_FB_ACT).catch(()=>[]),
@@ -327,7 +347,8 @@ async function loadDashboard(){
       fetchSheet(TAB_TARGET_SP_Q).catch(()=>[]),
       fetchPipelineNew().catch(()=>[]),
       fetchSheet(TAB_PIPELINE_SLA).catch(()=>[]),
-      fetchSheetRange(TAB_BRAND_STATUS_TRACKER,'A4:H').catch(()=>[])
+      fetchSheetRange(TAB_BRAND_STATUS_TRACKER,'A4:H').catch(()=>[]),
+      fetchSheet(TAB_MONTHLY_FB_ACT_REV).catch(()=>[])
     ]);
     window._pipelineRows=pipelineRows;
     window._pipelineRowsNew=pipelineRowsNew;
@@ -730,7 +751,10 @@ async function loadDashboard(){
       setTimeout(()=>renderPillarInv(window._pillarInvData),0);
       document.getElementById('fb-debug').style.display='none';
     })();
-    document.getElementById('loading-screen').style.display='none';
+    
+function renderMonthlyFootballCharts(rows){if(!rows||rows.length===0)return;const MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const YEAR_COLORS={'2024':'rgba(176,196,222,0.7)','2025':'#5aafdf','2026':'#0e2147'};const YEAR_LABEL_COLORS={'2024':'rgba(14,33,71,0.65)','2025':'#1a6cb5','2026':'#0e2147'};const dataByYear={};rows.forEach(row=>{const rev=parseFloat(String(row['Total Amount (after SAC)']||'').replace(/,/g,''))||0;const year=String(row['Year']||'').trim();const monthRaw=String(row['Format Month']||'').trim();if(!year||!monthRaw||rev<=0)return;if(!['2024','2025','2026'].includes(year))return;const monthMatch=monthRaw.match(/^([A-Za-z]{3})/);if(!monthMatch)return;const month=monthMatch[1];const monthIndex=MONTHS_SHORT.indexOf(month);if(monthIndex<0)return;if(!dataByYear[year])dataByYear[year]=Array(12).fill(0);dataByYear[year][monthIndex]+=rev;});const quarterlyByYear={};['2024','2025','2026'].forEach(year=>{quarterlyByYear[year]={Q1:0,Q2:0,Q3:0,Q4:0};const data=dataByYear[year]||[];data.forEach((val,idx)=>{if(idx<3)quarterlyByYear[year].Q1+=val;else if(idx<6)quarterlyByYear[year].Q2+=val;else if(idx<9)quarterlyByYear[year].Q3+=val;else quarterlyByYear[year].Q4+=val;});});const smContainer=document.getElementById('fb-monthly-small-multiples');if(smContainer){const years=['2024','2025','2026'];const maxValue=Math.max(...years.flatMap(y=>dataByYear[y]||[]),1);let html='';years.forEach(year=>{const data=dataByYear[year]||Array(12).fill(0);const barColor=YEAR_COLORS[year];const labelColor=YEAR_LABEL_COLORS[year];html+='<div style="margin-bottom:20px">';html+='<div style="font-family:Outfit,sans-serif;font-size:13px;font-weight:700;color:'+(year==='2024'?'var(--ink-muted)':year==='2025'?'#1a6cb5':'var(--navy)')+';margin-bottom:8px">'+year+'</div>';html+='<div style="display:flex;gap:2px;align-items:flex-end">';for(let i=0;i<12;i++){const val=data[i];const heightPct=maxValue>0?(val/maxValue*100):0;const label=val>0?Math.round(val/1e6)+'M':'';html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';html+='<div style="width:100%;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end">';html+='<div style="font-size:8px;font-weight:700;color:'+labelColor+';margin-bottom:2px">'+label+'</div>';html+='<div style="width:60%;height:'+heightPct+'%;background:'+barColor+';border-radius:3px 3px 0 0" title="'+MONTHS_SHORT[i]+' '+year+': '+(val/1e6).toFixed(1)+'M"></div>';html+='</div>';html+='<div style="font-size:9px;color:rgba(14,33,71,0.75);font-weight:600;margin-top:4px">'+MONTHS_SHORT[i]+'</div>';html+='</div>';}html+='</div></div>';});const maxQ=Math.max(...['Q1','Q2','Q3','Q4'].flatMap(q=>['2024','2025','2026'].map(y=>quarterlyByYear[y][q])),1);html+='<div style="border-top:2px solid #e8edf5;padding-top:20px;margin-top:10px">';html+='<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">';html+='<div style="font-family:Outfit,sans-serif;font-size:13px;font-weight:700;color:#0e2147">Quarterly Comparison · 2024–2026</div>';html+='<div style="font-size:10px;color:#7a8fa8;text-transform:uppercase">3-year quarter view</div>';html+='</div>';html+='<div style="display:flex;gap:12px;justify-content:space-between;margin-bottom:8px">';['Q1','Q2','Q3','Q4'].forEach(q=>{html+='<div style="flex:1">';html+='<div style="display:flex;gap:4px;justify-content:center;align-items:flex-end;height:80px;margin-bottom:8px">';['2024','2025','2026'].forEach(year=>{const val=quarterlyByYear[year][q];const heightPct=(val/maxQ)*100;const label=val>0?Math.round(val/1e6)+'M':'0M';html+='<div style="width:28%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">';html+='<div style="font-size:8px;font-weight:700;color:'+YEAR_LABEL_COLORS[year]+';margin-bottom:2px">'+label+'</div>';html+='<div style="width:100%;height:'+heightPct+'%;background:'+YEAR_COLORS[year]+';border-radius:3px 3px 0 0" title="'+year+' '+q+': '+(val/1e6).toFixed(1)+'M"></div>';html+='</div>';});html+='</div>';html+='<div style="text-align:center;font-size:11px;font-weight:700;color:#0e2147">'+q+'</div>';html+='</div>';});html+='</div>';html+='<div style="display:flex;gap:12px;justify-content:center;padding-top:12px;border-top:1px solid #e8edf5">';['2024','2025','2026'].forEach(year=>{html+='<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#7a8fa8;font-weight:600">';html+='<div style="width:12px;height:12px;border-radius:2px;background:'+YEAR_COLORS[year]+'"></div>';html+='<span>'+year+'</span>';html+='</div>';});html+='</div></div>';smContainer.innerHTML=html;}const canvas=document.getElementById('chartFbMonthlyOverlay');if(canvas){killChart('chartFbMonthlyOverlay');const datasets=['2024','2025','2026'].map(year=>({label:year,data:(dataByYear[year]||Array(12).fill(0)).map(v=>v/1e6),borderColor:YEAR_COLORS[year],backgroundColor:YEAR_COLORS[year]+'20',borderWidth:3,tension:0.3,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:YEAR_COLORS[year],pointBorderColor:'#fff',pointBorderWidth:2,fill:false}));charts['chartFbMonthlyOverlay']=new Chart(canvas,{type:'line',data:{labels:MONTHS_SHORT,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{usePointStyle:false,boxWidth:16,boxHeight:12,padding:16,font:{size:12,weight:'700'},color:'rgba(14,33,71,0.65)',generateLabels:function(chart){return chart.data.datasets.map((dataset,i)=>({text:dataset.label,fillStyle:dataset.borderColor,strokeStyle:'transparent',lineWidth:0,hidden:false,index:i}));}}},tooltip:{mode:'index',intersect:false,backgroundColor:'rgba(14,33,71,0.95)',titleFont:{size:13,weight:'700'},bodyFont:{size:12},padding:12,borderColor:'rgba(255,255,255,0.2)',borderWidth:1,callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)+'M THB';}}}},scales:{x:{grid:{display:false},ticks:{color:'rgba(14,33,71,0.65)',font:{size:11,weight:'600'}}},y:{beginAtZero:true,grid:{color:'rgba(14,33,71,0.08)'},ticks:{color:'rgba(14,33,71,0.65)',font:{size:11},callback:function(value){return value+'M';}}}},interaction:{mode:'index',intersect:false}}});}}
+window._monthlyFbRevRows=monthlyFbRevRows;if(monthlyFbRevRows&&monthlyFbRevRows.length>0){renderMonthlyFootballCharts(monthlyFbRevRows);}
+document.getElementById('loading-screen').style.display='none';
   }catch(err){document.getElementById('loading-screen').style.display='none';document.getElementById('error-screen').style.display='flex';document.getElementById('error-detail').textContent=err.message;console.error('Dashboard error:',err);}
 }
 
