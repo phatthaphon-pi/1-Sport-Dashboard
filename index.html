@@ -974,11 +974,12 @@ function renderFootball(d){
 ;
   (()=>{
     // Step 1: Build revenue map - use main source FIRST, then add Pillar's Clients ONLY for brands not in main source
+        const normalizeBrandName=b=>{const m={'AP HONDA':'Honda','ap honda':'Honda','AP Honda':'Honda'};return m[b]||b};
     const brandRevenue={};
-    const brandsInMainSource=new Set();
+    const brandsInMainSource={};
     // Add revenue from main source (fbBrandByContract25/26) - Direct clients
-    Object.keys(fbBrandByContract25).forEach(b=>{if(!brandRevenue[b])brandRevenue[b]={fy25:0,fy26:0};brandRevenue[b].fy25=fbBrandByContract25[b];brandsInMainSource.add(b);});
-    Object.keys(fbBrandByContract26).forEach(b=>{if(!brandRevenue[b])brandRevenue[b]={fy25:0,fy26:0};brandRevenue[b].fy26=fbBrandByContract26[b];brandsInMainSource.add(b);});
+    Object.keys(fbBrandByContract25).forEach(b=>{const bn=normalizeBrandName(b);if(!brandRevenue[bn])brandRevenue[bn]={fy25:0,fy26:0};brandRevenue[bn].fy25+=fbBrandByContract25[b];if(!brandsInMainSource[bn])brandsInMainSource[bn]={fy25:false,fy26:false};brandsInMainSource[bn].fy25=true;});
+    Object.keys(fbBrandByContract26).forEach(b=>{const bn=normalizeBrandName(b);if(!brandRevenue[bn])brandRevenue[bn]={fy25:0,fy26:0};brandRevenue[bn].fy26+=fbBrandByContract26[b];if(!brandsInMainSource[bn])brandsInMainSource[bn]={fy25:false,fy26:false};brandsInMainSource[bn].fy26=true;});
     // Add revenue from Pillar's Clients - ONLY for brands NOT in main source
     if(fbActPillarClientRows&&fbActPillarClientRows.length){
       const hdrs=Object.keys(fbActPillarClientRows[0])||[];
@@ -988,21 +989,22 @@ function renderFootball(d){
       const pillarBrandRev={};
       fbActPillarClientRows.forEach(r=>{
         const contract=String(r[COL_FB_CONTRACT]||'').trim();
-        const brand=String(r[COL_FB_BRAND]||'').trim();
+        const brand=normalizeBrandName(String(r[COL_FB_BRAND]||'').trim());
         const rev=parseFloat(String(r[COL_FB_REV]||'').replace(/,/g,''))||0;
         if(!brand||rev<=0)return;
-        // Skip if brand already in main source (to avoid double counting)
-        if(brandsInMainSource.has(brand))return;
-        if(!pillarBrandRev[brand])pillarBrandRev[brand]={fy25:0,fy26:0};
         const isFY25=contract.includes('FY25')||contract.includes('25/26');
+        // Skip only if this specific FY already exists in main source
+        if(brandsInMainSource[brand]?.fy25 && isFY25)return;
+        if(brandsInMainSource[brand]?.fy26 && !isFY25)return;
+        if(!pillarBrandRev[brand])pillarBrandRev[brand]={fy25:0,fy26:0};
         if(isFY25)pillarBrandRev[brand].fy25+=rev;else pillarBrandRev[brand].fy26+=rev;
       });
       // Add pillar brands to brandRevenue
       Object.keys(pillarBrandRev).forEach(b=>{if(!brandRevenue[b])brandRevenue[b]={fy25:0,fy26:0};brandRevenue[b].fy25+=pillarBrandRev[b].fy25;brandRevenue[b].fy26+=pillarBrandRev[b].fy26;});
     }
     // Step 2: Get brands from inventory for classification (fbInvRows)
-    const brands25=new Set(fbInvRows.filter(r=>{const fy=String(r['Contract']||'').trim(),s=String(r['Actual Package Status']||'').toLowerCase();return(fy.includes('FY25')||fy.includes('25/26'))&&s.includes('close');}).map(r=>String(r['Brand: Brand Name']||'').trim()).filter(b=>b));
-    const brands26=new Set(fbInvRows.filter(r=>{const fy=String(r['Contract']||'').trim(),s=String(r['Actual Package Status']||'').toLowerCase();return(fy.includes('FY26')||fy.includes('26/27'))&&s.includes('close');}).map(r=>String(r['Brand: Brand Name']||'').trim()).filter(b=>b));
+    const brands25=new Set(fbInvRows.filter(r=>{const fy=String(r['Contract']||'').trim(),s=String(r['Actual Package Status']||'').toLowerCase();return(fy.includes('FY25')||fy.includes('25/26'))&&s.includes('close');}).map(r=>normalizeBrandName(String(r['Brand: Brand Name']||'').trim())).filter(b=>b));
+    const brands26=new Set(fbInvRows.filter(r=>{const fy=String(r['Contract']||'').trim(),s=String(r['Actual Package Status']||'').toLowerCase();return(fy.includes('FY26')||fy.includes('26/27'))&&s.includes('close');}).map(r=>normalizeBrandName(String(r['Brand: Brand Name']||'').trim())).filter(b=>b));
     // Add brands from Pillar's Clients to classification
     Object.keys(brandRevenue).forEach(b=>{if(brandRevenue[b].fy25>0)brands25.add(b);if(brandRevenue[b].fy26>0)brands26.add(b);});
     // Step 3: Classify brands
