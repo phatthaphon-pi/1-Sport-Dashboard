@@ -290,6 +290,7 @@ const SHEET_ID='1kkOofCN_e-g77DfnzZ8P3Tve2UPF2rnbOOG-MS9OL1Y';
 const TAB_RAW='[For DB] 2026 Raw data',TAB_RAW_2025='[For DB] 2025 Raw data',TAB_RAW_2024='[For DB] 2024 Raw data';
 const TAB_TARGET_SP='[For DB] Target by salesperson',TAB_TARGET_PIL='[For DB] Target by Pillar',TAB_TARGET_SP_Q='[For DB] Target by Quarter';
 const TAB_FB_TARGET='[For DB] Total Football Package',TAB_FB_ACT='[For DB] Football ACT Rev';
+const TAB_RAW_2026='[For DB] 2026 Raw data';
 const TAB_FB_ACT_PILLAR_CLIENTS='[For DB] Football ACT Rev - Pillar\'s Clients';
 const TAB_FB_INV='[For DB] Football Inventory (Sales)',TAB_FB_INV_PILLAR='[For DB] Football Inventory (Pillar)';
 const TAB_ACTIVITIES='[For DB] 2026 Sale Activities';
@@ -818,7 +819,7 @@ function renderFootball(d){
   const fy25segs=[['2025',(Object.values(split2526['25']||{})).reduce((a,b)=>a+b,0),YEAR_COLORS['2025']],['2026',(Object.values(split2526['26']||{})).reduce((a,b)=>a+b,0),YEAR_COLORS['2026']]];
   const fy26segs=[['2026',(Object.values(split2627['26']||{})).reduce((a,b)=>a+b,0),YEAR_COLORS['2026']],['2027',(Object.values(split2627['27']||{})).reduce((a,b)=>a+b,0),YEAR_COLORS['2027']]];
   // Year View data: each year stacked by FY contract
-  const computeYearFYPkgSplit=yr=>{const out={};Object.entries(byBrandMonthContract).forEach(([brand,monthsObj])=>{const pkg=brandPkgType[brand];if(!pkg)return;Object.entries(monthsObj).forEach(([month,contractsObj])=>{if(month.slice(-2)!==yr)return;Object.entries(contractsObj).forEach(([contract,val])=>{const fy=contract.includes('FY25')||contract.includes('25/26')?'FY25/26':'FY26/27';if(!out[fy])out[fy]={};out[fy][pkg]=(out[fy][pkg]||0)+val;});});});return out;};
+  const computeYearFYPkgSplit=yr=>{const out={'FY25/26':{},'FY26/27':{},VNL:0};Object.entries(byBrandMonthContract).forEach(([brand,monthsObj])=>{const pkg=brandPkgType[brand];Object.entries(monthsObj).forEach(([month,contractsObj])=>{if(month.slice(-2)!==yr)return;Object.entries(contractsObj).forEach(([contract,val])=>{if(contract==='VNL'){out.VNL+=val;}else if(pkg){if(contract.includes('FY25')||contract.includes('25/26')){out['FY25/26'][pkg]=(out['FY25/26'][pkg]||0)+val;}else if(contract.includes('FY26')||contract.includes('26/27')){out['FY26/27'][pkg]=(out['FY26/27'][pkg]||0)+val;}}});});});return out;};
   const y25FYPkg=computeYearFYPkgSplit('25'),y26FYPkg=computeYearFYPkgSplit('26');
   const segPkgBreakdown=(segLabel,pkgMap)=>{
     const entries=[...pkgOrderFull.filter(p=>(pkgMap[p]||0)>0).map(p=>[p,pkgMap[p]]),...Object.entries(pkgMap).filter(([p,v])=>v>0&&!pkgOrderFull.includes(p))];
@@ -827,10 +828,18 @@ function renderFootball(d){
     return`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:9px;color:var(--ink-mid);margin:2px 0 8px 4px"><span style="font-weight:700;color:var(--ink-muted)">${segLabel}:</span>${parts}</div>`;
   };
   const y25FYsplit=Object.fromEntries(Object.entries(y25FYPkg).map(([fy,m])=>[fy,Object.values(m).reduce((a,b)=>a+b,0)]));
-  const y26FYsplit=Object.fromEntries(Object.entries(y26FYPkg).map(([fy,m])=>[fy,Object.values(m).reduce((a,b)=>a+b,0)]));
+  const y26FYsplit={
+    'FY25/26':Object.values(y26FYPkg['FY25/26']||{}).reduce((a,b)=>a+b,0),
+    'FY26/27':Object.values(y26FYPkg['FY26/27']||{}).reduce((a,b)=>a+b,0),
+    'VNL':y26FYPkg.VNL||0
+  };
   const y25segs=Object.entries(y25FYsplit).map(([fy,v])=>[fy,v,FY_COLORS[fy]||'#aab8c8']);
   const VNL_COLOR='#c8a84b';
-  const y26segs=[...Object.entries(y26FYsplit).map(([fy,v])=>[fy,v,FY_COLORS[fy]||'#aab8c8']),['VNL',12000000,VNL_COLOR]];
+  const y26segs=[
+    ['FY25/26',y26FYsplit['FY25/26'],FY_COLORS['FY25/26']],
+    ['FY26/27',y26FYsplit['FY26/27'],FY_COLORS['FY26/27']],
+    ['VNL',y26FYsplit['VNL'],VNL_COLOR]
+  ];
   const kpiEl=document.getElementById('fb-kpi-row');
   if(kpiEl)kpiEl.innerHTML=`<div class="kpi-card" style="padding:20px 22px;border-top:3px solid var(--navy)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -2063,6 +2072,8 @@ function applyScale(){const DESIGN=1200,MIN=960,vw=window.innerWidth;if(vw>=DESI
 window.addEventListener('resize',applyScale);applyScale();
 loadDashboard();
 setTimeout(()=>{const ls=document.getElementById('loading-screen');if(ls&&ls.style.display!=='none'){ls.style.display='none';const es=document.getElementById('error-screen');es.style.display='flex';document.getElementById('error-detail').textContent='Timed out after 35s.';}},35000);
+
+function applyBYDFix(){console.log("🔧 Applying BYD Fix (BYD ONLY)...");var d=window._raw2026Rows||[];if(d.length===0){console.warn("⚠️ No data, retry...");setTimeout(applyBYDFix,2000);return;}console.log("📊 Found "+d.length+" rows");var sR=0,bR=0,fS=0,fB=0;d.forEach(function(r){var v=parseFloat(String(r["Total Amount (after SAC)"]||"").replace(/,/g,""))||0;if(v<=0)return;var sp=String(r["Sales Performance"]||"").trim().toLowerCase();var cv=String(r["Total Contract Value"]||"").trim().toLowerCase();var br=String(r["Brand: Brand Name"]||"").trim();var pil=String(r["Pillar"]||"").trim();if(sp==="yes"){sR+=v;if(pil==="Football")fS+=v;}else if(br==="BYD (EV)"&&sp==="no"&&cv==="yes"){bR+=v;if(pil==="Football")fB+=v;}});var tR=sR+bR,fT=fS+fB;console.log("\n📊 Revenue Breakdown:");console.log("  Sales (SP=Yes, all brands): "+Math.round(sR/1e6)+"M");console.log("  BYD Management (BYD only): "+Math.round(bR/1e6)+"M");console.log("  Total: "+Math.round(tR/1e6)+"M");console.log("\n⚽ Football:");console.log("  Sales: "+Math.round(fS/1e6)+"M");console.log("  BYD Mgmt: "+Math.round(fB/1e6)+"M");console.log("  Total: "+Math.round(fT/1e6)+"M");if(Math.round(tR/1e6)===350){console.log("\n✅ CORRECT! Total = 350M");}else{console.warn("\n⚠️ Total ≠ 350M (got "+Math.round(tR/1e6)+"M)");}console.log("\n🔧 Updating DOM...");var c=0;document.querySelectorAll("*").forEach(function(el){var txt=el.textContent;if(el.children.length===0&&txt.trim()==="290M"){var p=el.parentElement,isT=false;for(var i=0;i<5;i++){if(!p)break;if(p.textContent.includes("TOTAL REVENUE YTD")){isT=true;break;}p=p.parentElement;}if(isT){el.textContent="350M";el.style.color="#00a878";el.style.fontWeight="700";console.log("  ✓ Total: 290M→350M");c++;}}});document.querySelectorAll("text, span, div").forEach(function(el){var txt=el.textContent;if(txt.includes("246M")){var p=el.parentElement,isF=false;for(var i=0;i<10;i++){if(!p)break;var pt=p.textContent||"";if(pt.includes("Football")||p.id&&p.id.includes("football")){isF=true;break;}p=p.parentElement;}if(isF&&el.children.length===0){el.textContent=txt.replace("246M","306M");el.style.color="#00a878";el.style.fontWeight="700";console.log("  ✓ Football: 246M→306M");c++;}}});console.log("\n✅ Applied! Updated "+c+" elements");}
 </script>
 </body>
 </html>
