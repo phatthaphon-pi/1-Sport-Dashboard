@@ -107,6 +107,38 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 [data-filter-mode="management"] .fb-bar-sales {
   display: none !important;
 }
+/* ===== Team Overview (Revise) — draft v2 layout ===== */
+.rv-banner{background:#fff8e1;border:1px solid #ffd54f;border-radius:8px;padding:10px 14px;font-size:11.5px;color:#6b5400;margin-bottom:22px;line-height:1.6}
+.rv-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 4px rgba(14,33,71,.06)}
+.rv-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)}
+.rv-big{font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:-.02em;line-height:1}
+.rv-bar{height:6px;background:#e8edf5;border-radius:99px;overflow:hidden;margin:6px 0}.rv-bar i{display:block;height:100%;border-radius:99px;width:0}
+.rv-ph{margin-top:8px;border:1px dashed var(--ink-faint);border-radius:6px;color:var(--ink-muted);font-size:10px;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.rv-overall{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px;margin-bottom:24px}
+.rv-ov-main{background:linear-gradient(135deg,#0e2147,#1a3567);color:#fff;padding:20px 24px;border-radius:12px;display:flex;flex-direction:column;gap:8px}
+.rv-ov-main .rv-lbl{color:rgba(255,255,255,.55)}.rv-ov-main .rv-bar{background:rgba(255,255,255,.15)}
+.rv-ov-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}.rv-ov-kpis div{background:rgba(255,255,255,.09);border-radius:8px;padding:8px 10px}.rv-ov-kpis b{display:block;font-family:'Outfit',sans-serif;font-size:16px}
+.rv-ov-team{padding:16px 18px}
+.rv-team{margin-bottom:30px}
+.rv-team-hd{display:flex;align-items:center;justify-content:space-between;color:#fff;border-radius:12px 12px 0 0;padding:12px 20px}
+.rv-team-hd .n{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800}.rv-team-hd .m{font-size:11px;opacity:.7}
+.rv-team-body{display:grid;grid-template-columns:330px 1fr;gap:14px;background:var(--surface-2);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:14px}
+.rv-tsum{padding:18px;display:flex;flex-direction:column;gap:10px}
+.rv-kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center}.rv-kv div{background:var(--surface-2);border-radius:8px;padding:7px 4px}.rv-kv b{display:block;font-family:'Outfit',sans-serif;font-size:14px}
+.rv-members{display:grid;gap:12px}.rv-m3{grid-template-columns:repeat(3,1fr)}.rv-m4{grid-template-columns:repeat(4,1fr)}
+.rv-mc{padding:14px 14px 12px}.rv-mc .nm{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700}.rv-mc .rev{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;margin:4px 0 2px}
+.rv-mc .sub{font-size:10.5px;color:var(--ink-muted)}.rv-pct{font-family:'Outfit',sans-serif;font-weight:800;font-size:15px;color:var(--ink-faint)}
+.rv-rank{float:right;font-size:9px;font-weight:700;color:var(--ink-muted);letter-spacing:.08em}
+.rv-tbd{font-size:9px;font-weight:700;background:var(--amber-dim);color:var(--amber);border-radius:99px;padding:1px 7px;margin-left:6px;font-family:'Manrope',sans-serif}
+.rv-mix{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}.rv-mix .rv-card{padding:16px 18px}
+.rv-act-team{margin-bottom:18px}.rv-act-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px}.rv-act-hd b{font-family:'Outfit',sans-serif;font-size:14px}
+.rv-act-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.rv-act{padding:12px 14px}.rv-act .t{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;margin-bottom:6px;display:flex;justify-content:space-between}
+.rv-hm{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:2px}.rv-hm span{aspect-ratio:1;border-radius:3px;background:var(--bg)}
+.rv-hm-m span{background:none;aspect-ratio:auto;font-size:7px;color:var(--ink-muted);text-align:center;font-weight:600}
+.rv-hm-l{font-size:8px;color:var(--ink-muted);margin:4px 0 2px;font-weight:600}
+.rv-act.sum{background:var(--surface-2);border-style:dashed}
+.nav-tab.wip-tab{padding-right:34px}
 </style>
 </head>
 <body>
@@ -136,6 +168,8 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <button class="nav-scroll-btn left hidden" id="nav-btn-left" onclick="navScroll(-1)" aria-label="Scroll left">‹</button>
   <div class="nav-bar" id="nav-bar">
     <div class="nav-tab active" onclick="showPage('overview',this)">📊 &nbsp;Team Overview</div>
+    <div class="nav-tab" onclick="showPage('overviewFb',this)">⚽ &nbsp;Team Overview (Football)</div>
+    <div class="nav-tab wip-tab" onclick="showPage('overview2',this)">📊 &nbsp;Team Overview (Revise)</div>
     <div class="nav-tab" onclick="showPage('yoy',this)">📈 &nbsp;YoY 2026 vs 2025</div>
     <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
     <div class="nav-tab" onclick="showPage('football',this)">⚽ &nbsp;Football Sales Revenue & Contracts</div>
@@ -286,6 +320,67 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div id="pipeline-filters-new" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;"></div>
   <div id="brand-tracker-new" style="margin-bottom:20px;"></div>
   <div id="pipeline-cards-new" style="display:grid;grid-template-columns:1fr;gap:16px;"></div>
+</div>
+
+<div class="page" id="page-overviewFb">
+  <div class="rv-banner" style="background:var(--navy-soft);border-color:var(--border);color:var(--ink-mid)"><b>Team Overview (Football)</b> — เหมือนหน้า Team Overview ทุกอย่าง แต่แยก Football ออกจาก Revenue by Pillar และนับ Football เฉพาะ Contract FY26/27 (ใช้ยอดนี้ใน KPI ด้านบนแทนยอด Football เดิม)</div>
+  <div id="fbo-root"></div>
+</div>
+
+<div class="page" id="page-overview2">
+  <div class="rv-banner"><b>REVISE · Draft layout</b> — ส่วน Team Scorecards และ Sales Activity เป็น layout แบบใหม่ที่ยังใส่ <b>placeholder</b> (ยังไม่ผูกข้อมูลจริง) ส่วนอื่นเป็นสำเนาของหน้า Team Overview เดิม</div>
+  <div id="rv-top"></div>
+
+  <div class="sec-hd"><div class="sec-title">Team Scorecards</div><div class="sec-sub">YTD Performance · Overall → Team → Member</div></div>
+  <div class="rv-overall">
+    <div class="rv-ov-main">
+      <div class="rv-lbl">Overall Sales Revenue YTD · 2 Teams · 7 Members</div>
+      <div class="rv-big" style="font-size:40px">00.0M <span style="font-size:14px;font-weight:600;opacity:.6">THB</span></div>
+      <div class="rv-bar"><i></i></div>
+      <div class="rv-ov-kpis"><div><span class="rv-lbl">Target</span><b>00M</b></div><div><span class="rv-lbl">Gap</span><b>00M</b></div><div><span class="rv-lbl">Attainment</span><b>00%</b></div></div>
+      <div class="rv-ph" style="height:86px;border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.6)">Revenue by Pillar (รวม 2 ทีม)</div>
+    </div>
+    <div class="rv-card rv-ov-team"><div style="display:flex;justify-content:space-between"><b>Team Kate</b><span class="rv-lbl">Ink · Petch · Yok</span></div><div class="rv-big" style="font-size:26px;margin:8px 0">00.0M <span style="font-size:11px;color:var(--ink-muted);font-weight:600">/ 00M</span></div><div class="rv-bar"><i></i></div><div style="display:flex;justify-content:space-between"><span class="rv-pct">00%</span><span class="rv-lbl" style="align-self:center">สัดส่วนของ Overall 00%</span></div><div class="rv-ph" style="height:60px">Quarterly (เล็ก)</div></div>
+    <div class="rv-card rv-ov-team"><div style="display:flex;justify-content:space-between"><b>Team Proud</b><span class="rv-lbl">Nay · Bell · Pond · Som</span></div><div class="rv-big" style="font-size:26px;margin:8px 0">00.0M <span style="font-size:11px;color:var(--ink-muted);font-weight:600">/ 00M</span></div><div class="rv-bar"><i></i></div><div style="display:flex;justify-content:space-between"><span class="rv-pct">00%</span><span class="rv-lbl" style="align-self:center">สัดส่วนของ Overall 00%</span></div><div class="rv-ph" style="height:60px">Quarterly (เล็ก)</div></div>
+  </div>
+
+  <div class="rv-team">
+    <div class="rv-team-hd" style="background:linear-gradient(135deg,#0e2147,#1a3567)"><div class="n">TEAM KATE</div><div class="m">Ink · Petch · Yok</div></div>
+    <div class="rv-team-body">
+      <div class="rv-card rv-tsum">
+        <div class="rv-lbl">Team Revenue YTD (Ink+Petch+Yok)</div><div class="rv-big" style="font-size:34px">00.0M</div>
+        <div class="rv-bar"><i></i></div>
+        <div class="rv-kv"><div><span class="rv-lbl">Target</span><b>00M</b></div><div><span class="rv-lbl">Gap</span><b>00M</b></div><div><span class="rv-lbl">Attain</span><b>00%</b></div></div>
+        <div class="rv-ph" style="height:96px">Revenue by Pillar (รวมทีม)</div>
+        <div class="rv-ph" style="height:96px">Quarterly Actual vs Target (รวมทีม)</div>
+        <div class="rv-ph" style="height:70px">Member contribution<br>Ink · Petch · Yok</div>
+      </div>
+      <div class="rv-members rv-m3" id="rv-kate"></div>
+    </div>
+  </div>
+  <div class="rv-team">
+    <div class="rv-team-hd" style="background:linear-gradient(135deg,#0b4a63,#00809f)"><div class="n">TEAM PROUD</div><div class="m">Nay · Bell · Pond · Som</div></div>
+    <div class="rv-team-body">
+      <div class="rv-card rv-tsum">
+        <div class="rv-lbl">Team Revenue YTD (Nay+Bell+Pond+Som)</div><div class="rv-big" style="font-size:34px">00.0M</div>
+        <div class="rv-bar"><i></i></div>
+        <div class="rv-kv"><div><span class="rv-lbl">Target</span><b>00M</b></div><div><span class="rv-lbl">Gap</span><b>00M</b></div><div><span class="rv-lbl">Attain</span><b>00%</b></div></div>
+        <div class="rv-ph" style="height:96px">Revenue by Pillar (รวมทีม · รวม Pond)</div>
+        <div class="rv-ph" style="height:96px">Quarterly Actual vs Target (รวมทีม)</div>
+        <div class="rv-ph" style="height:70px">Member contribution<br>Nay · Bell · Pond · Som</div>
+      </div>
+      <div class="rv-members rv-m4" id="rv-proud"></div>
+    </div>
+  </div>
+
+  <div class="rv-mix">
+    <div class="rv-card"><div class="chart-card-title">Revenue Mix · by Team</div><div class="chart-card-sub">Team Kate vs Team Proud</div><div class="rv-ph" style="height:110px">Donut</div></div>
+    <div class="rv-card"><div class="chart-card-title">Revenue Mix · by Member</div><div class="chart-card-sub">7 คน · สีจัดกลุ่มตามทีม</div><div class="rv-ph" style="height:110px">Donut</div></div>
+  </div>
+
+  <div style="margin-bottom:28px"><div class="sec-hd" style="margin-bottom:16px"><div><div class="sec-title">Sales Activity</div><div class="sec-sub">Heatmap by month · sales member ทั้ง 7 คน จัดกลุ่มตามทีม</div></div></div><div id="rv-activity"></div></div>
+
+  <div id="rv-bottom"></div>
 </div>
 
 <div class="footer">
@@ -585,6 +680,7 @@ async function loadDashboard(){
     killChart('chartYoYPillar');charts['chartYoYPillar']=new Chart(document.getElementById('chartYoYPillar'),{type:'bar',plugins:[yoyLabelPlugin],data:{labels:yoyPillarOrder,datasets:[{label:'2024',data:yoyPillarOrder.map(p=>(bp2024[p]||0)/1e6),backgroundColor:'rgba(14,33,71,0.20)',borderRadius:2,borderSkipped:false,categoryPercentage:0.6,barPercentage:1.0},{label:'2025',data:yoyPillarOrder.map(p=>(bp2025[p]||0)/1e6),backgroundColor:'#5aafdf',borderRadius:2,borderSkipped:false,categoryPercentage:0.6,barPercentage:1.0},{label:'2026',data:yoyPillarOrder.map(p=>(bp2026[p]||0)/1e6),backgroundColor:'#0e2147',borderRadius:2,borderSkipped:false,categoryPercentage:0.6,barPercentage:1.0}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:22}},plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,color:tC,font:{size:11}}}},scales:{x:{grid:{display:false},ticks:{color:tC,font:{weight:'600',size:11}}},y:{grid:{color:gC},ticks:{color:tC,callback:v=>v+'M'},beginAtZero:true}}}});
     (()=>{const QUARTERS=['Q1','Q2','Q3','Q4'],SHOW_Q=['Football','Muay Thai','Running','Talent Management','eSports & Games'];const allQP=[...SHOW_Q,...Object.keys(byPillarQuarter).filter(p=>!SHOW_Q.includes(p)&&p!=='Other'&&p!=='Others')];const el=document.getElementById('pillar-quarter-cards');if(!el)return;el.innerHTML=QUARTERS.map(q=>{const rows2=allQP.map(pil=>{const act=(byPillarQuarter[pil]&&byPillarQuarter[pil][q]||0),tgt=(targetByPillarQ[pil]&&targetByPillarQ[pil][q]||0);const pct=tgt>0?Math.min(act/tgt*100,100):0,pctRaw=tgt>0?Math.round(act/tgt*100):0,col=pctRaw>=65?'#00a878':pctRaw>=40?'#c97200':'#d63b4a',hex=pillarColors[pil]||'#aab8c8';if(act===0&&tgt===0)return`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px"><span style="font-size:10px;font-weight:700;color:var(--navy)">${pil}</span><span style="font-size:10px;color:rgba(14,33,71,0.35)">No Target</span></div><div style="height:9px;border-radius:4px;background:rgba(14,33,71,0.08)"></div></div>`;return`<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px"><span style="font-size:10px;font-weight:700;color:var(--navy)">${pil}</span><span style="font-size:10px;font-weight:800;color:${col}">${pctRaw}%</span></div><div style="position:relative;height:9px;border-radius:4px;overflow:hidden"><div style="position:absolute;inset:0;background:rgba(14,33,71,0.10);border-radius:4px"></div><div style="position:absolute;inset:0;border-radius:4px;width:${pct.toFixed(1)}%;background:${hex}"></div></div><div style="display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:rgba(14,33,71,0.65);font-weight:600"><span>${fmtM(act)}M</span><span>${fmtM(tgt)}M target</span></div></div>`;}).join('');const qAct=allQP.reduce((s,p)=>s+(byPillarQuarter[p]&&byPillarQuarter[p][q]||0),0),qTgt=allQP.reduce((s,p)=>s+(targetByPillarQ[p]&&targetByPillarQ[p][q]||0),0),qPct=qTgt>0?Math.round(qAct/qTgt*100):0,qCol=qPct>=65?'#00a878':qPct>=40?'#c97200':'#d63b4a';return`<div style="background:var(--bg);border-radius:10px;padding:14px 16px"><div style="margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:14px;font-weight:900;color:var(--navy)">${q} 2026</div><div style="font-size:18px;font-weight:900;color:${qCol}">${qPct}%</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><div style="background:white;border-radius:6px;padding:6px 10px;border-left:3px solid var(--navy)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted)">Actual</div><div style="font-size:17px;font-weight:800;color:var(--navy)">${fmtM(qAct)}M</div></div><div style="background:white;border-radius:6px;padding:6px 10px;border-left:3px solid rgba(14,33,71,0.2)"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--ink-muted)">Target</div><div style="font-size:17px;font-weight:800;color:rgba(14,33,71,0.5)">${fmtM(qTgt)}M</div></div></div></div>${rows2}</div>`;}).join('');})();
     const targetByPillar=parseWideTargets(pillarRows);
+    window._ovCore={totalRevenue,totalTarget,fbPillarRev:byPillar['Football']||0,fbPillarTarget:targetByPillar['Football']||0};
     (()=>{const PBPILLARS=['Football','Muay Thai','Running','Talent Management','eSports & Game','Asian Games'];const pillarBrandsMap={};PBPILLARS.forEach(pil=>{const srcKey=pil==='eSports & Game'?['eSports & Game','eSports & Games']:[pil],merged={};srcKey.forEach(k=>{Object.entries(byPillarBrand[k]||{}).forEach(([b,v])=>{merged[b]=(merged[b]||0)+v;});});pillarBrandsMap[pil]=Object.entries(merged).map(([brand,rev])=>({brand,rev}));});const pbEl=document.getElementById('pillar-brand-cards');if(!pbEl)return;pbEl.innerHTML=PBPILLARS.map(pil=>{const brands=(pillarBrandsMap[pil]||[]).sort((a,b)=>b.rev-a.rev),total=brands.reduce((s,b)=>s+b.rev,0),hex=pillarColors[pil]||'#aab8c8';const rows2=brands.slice(0,8).map(({brand,rev})=>{const pct=total>0?rev/total*100:0;return`<div style="margin-bottom:5px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:9px;font-weight:600;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;max-width:68%">${brand}</span><span style="font-size:9px;font-weight:700;color:var(--navy)">${fmtM(rev)}M</span></div><div style="background:var(--bg);border-radius:3px;height:4px;overflow:hidden"><div style="height:100%;border-radius:3px;width:${pct.toFixed(1)}%;background:${hex}"></div></div></div>`;}).join('');const pilTgt=targetByPillar[pil]||0,pilGap=pilTgt>0?Math.max(pilTgt-total,0):0;return`<div style="background:var(--surface);border-radius:10px;padding:12px 14px;border-top:3px solid ${hex}"><div style="font-size:10px;font-weight:800;color:var(--navy);margin-bottom:6px">${pil}</div><div style="font-size:22px;font-weight:800;color:${hex};margin-bottom:8px">${fmtM(total)}M</div>${pilTgt>0?`<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-mid);margin-bottom:3px"><span>Target</span><span style="font-weight:700">${fmtM(pilTgt)}M</span></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-mid);margin-bottom:8px"><span>Gap</span><span style="font-weight:700">${fmtM(pilGap)}M</span></div>`:''} ${brands.length>0?rows2:'<div style="font-size:9px;color:var(--ink-muted);padding:8px 0">No revenue yet</div>'}</div>`;}).join('');})();
     const PILLAR_FIXED_ORDER=['Football','Muay Thai','Running','Talent Management','eSports & Game','eSports & Games','Asian Games'];
     const allPillarKeys=[...new Set([...Object.keys(byPillar),...Object.keys(targetByPillar)])];
@@ -701,6 +797,7 @@ async function loadDashboard(){
       let fbTarget25=513200000,fbTarget26=688300000;
       const fbActByContract={},fbContractPkg25={},fbContractPkg26={},fbBrandByContract25={},fbBrandByContract26={};
       const ALL_TIMELINE_MONTHS=['Jan-25','Feb-25','Mar-25','Apr-25','May-25','Jun-25','Jul-25','Aug-25','Sep-25','Oct-25','Nov-25','Dec-25','Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26','Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26','Jan-27','Feb-27','Mar-27','Apr-27','May-27','Jun-27','Jul-27','Aug-27','Sep-27','Oct-27','Nov-27','Dec-27'];
+      const fbFY26Brand={},fbFY26Pkg={},fbFY26BrandPkg={};
       const byMonthContract={},byMonthPipeline={},byBrandMonthContract={},byBrandMonthPipeline={},brandPkgType={},pipelineBrandPkgType={};
       const tgtByContractPkg={};let tgtFY25=0,tgtFY26=0;
       fbTargetRows.forEach(r=>{const contract=String(r['Contract']||'').trim(),pkg=String(r['Package Type']||'').trim(),val=parseFloat(r['Total Package Value'])||0;if(!contract||!pkg||val<=0)return;if(contract.toLowerCase().includes('total')||contract.toLowerCase().includes('grand'))return;if(!tgtByContractPkg[contract])tgtByContractPkg[contract]={};tgtByContractPkg[contract][pkg]=(tgtByContractPkg[contract][pkg]||0)+val;if(contract.includes('25'))tgtFY25+=val;else tgtFY26+=val;});
@@ -711,6 +808,7 @@ async function loadDashboard(){
         const isPipeline=revType.toLowerCase()==='pipeline';
         if(!isPipeline)fbActByContract[contract]=(fbActByContract[contract]||0)+rev;
         const isFY25c=contract.includes('FY25')||contract.includes('25/26');
+        if(!isPipeline&&(contract.includes('FY26')||contract.includes('26/27'))){if(brand)fbFY26Brand[brand]=(fbFY26Brand[brand]||0)+rev;const pk=pkg||'(no package)';if(brand){if(!fbFY26BrandPkg[brand])fbFY26BrandPkg[brand]={};fbFY26BrandPkg[brand][pk]=(fbFY26BrandPkg[brand][pk]||0)+rev;}fbFY26Pkg[pk]=(fbFY26Pkg[pk]||0)+rev;}
         if(brand&&!isPipeline){if(isFY25c)fbBrandByContract25[brand]=(fbBrandByContract25[brand]||0)+rev;else fbBrandByContract26[brand]=(fbBrandByContract26[brand]||0)+rev;}
         if(ALL_TIMELINE_MONTHS.includes(month)){
           if(isPipeline){
@@ -747,7 +845,7 @@ async function loadDashboard(){
         }
       });
       console.log('[Projected Revenue Debug] 2026 Actual:',fbActual2026Only/1e6,'M, 2026 Pipeline:',fbPipeline2026Only/1e6,'M');
-      window._fbData={fbTarget25,fbTarget26,fbActByContract,fbContractPkg25,fbContractPkg26,fbBrandByContract25,fbBrandByContract26,byMonthContract,byMonthPipeline,byBrandMonthContract,byBrandMonthPipeline,brandPkgType,pipelineBrandPkgType,ALL_TIMELINE_MONTHS,fbInvRows,fbActPillarClientRows,fbInvPillarRows,tgtByContractPkg,pkgConfigRows,fbClientRows,fbActual2026Only,fbPipeline2026Only};
+      window._fbData={fbFY26BrandPkg,fbFY26Brand,fbFY26Pkg,fbTarget25,fbTarget26,fbActByContract,fbContractPkg25,fbContractPkg26,fbBrandByContract25,fbBrandByContract26,byMonthContract,byMonthPipeline,byBrandMonthContract,byBrandMonthPipeline,brandPkgType,pipelineBrandPkgType,ALL_TIMELINE_MONTHS,fbInvRows,fbActPillarClientRows,fbInvPillarRows,tgtByContractPkg,pkgConfigRows,fbClientRows,fbActual2026Only,fbPipeline2026Only};
       window._pillarInvData={pillarPkgConfigRows,pillarClientRows,byPillar,byPillarBrand};
       // Debug Football Pipeline
       let totalFbPipelineDebug=0;
@@ -2097,13 +2195,147 @@ function renderPillarInv(data){
 function navScroll(dir){const bar=document.getElementById('nav-bar');if(bar)bar.scrollBy({left:dir*220,behavior:'smooth'});}
 (function initNavScroll(){const bar=document.getElementById('nav-bar');const wrap=document.getElementById('nav-scroll-wrap');const btnL=document.getElementById('nav-btn-left');const btnR=document.getElementById('nav-btn-right');if(!bar||!wrap||!btnL||!btnR)return;const update=()=>{const atStart=bar.scrollLeft<=4;const atEnd=bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4;btnL.classList.toggle('hidden',atStart);btnR.classList.toggle('hidden',atEnd);wrap.classList.toggle('at-start',atStart);wrap.classList.toggle('at-end',atEnd);};bar.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();})();
 function refreshData(){const btn=document.getElementById('refresh-btn');if(btn){btn.textContent='↻ Refreshing...';btn.disabled=true;}loadDashboard().finally(()=>{if(btn){btn.textContent='↺ Refresh';btn.disabled=false;}});}
-function showPage(name,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');el.classList.add('active');if(name==='football'){setTimeout(()=>{if(window._fbData)renderFootball(window._fbData);},80);}if(name==='mgmt'){setTimeout(()=>initMgmtPage(),80);}if(name==='pilinv'){setTimeout(()=>renderPillarInv(window._pillarInvData),80);}if(name==='pipeline'){setTimeout(()=>{if(window._pipelineRows&&window._pipelineRows.length)renderPipeline(window._pipelineRows,new Set(),new Set(),new Set());},80);}if(name==='pipelineNew'){setTimeout(()=>{renderPipelineNew(window._pipelineRowsNew||[],new Set(),new Set(),new Set());},80);}}
+function showPage(name,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');el.classList.add('active');window.scrollTo({top:0,left:0,behavior:'instant'});document.documentElement.scrollTop=0;document.body.scrollTop=0;if(name==='football'){setTimeout(()=>{if(window._fbData)renderFootball(window._fbData);},80);}if(name==='mgmt'){setTimeout(()=>initMgmtPage(),80);}if(name==='pilinv'){setTimeout(()=>renderPillarInv(window._pillarInvData),80);}if(name==='pipeline'){setTimeout(()=>{if(window._pipelineRows&&window._pipelineRows.length)renderPipeline(window._pipelineRows,new Set(),new Set(),new Set());},80);}if(name==='pipelineNew'){setTimeout(()=>{renderPipelineNew(window._pipelineRowsNew||[],new Set(),new Set(),new Set());},80);}if(name==='overview2'){setTimeout(()=>buildReviseOverview(),60);}if(name==='overviewFb'){setTimeout(()=>buildFootballOverview(),60);}}
 function applyScale(){const DESIGN=1200,MIN=960,vw=window.innerWidth;if(vw>=DESIGN){document.body.style.transform='';document.body.style.width='';document.documentElement.style.height='';}else{const scale=Math.max(vw/DESIGN,MIN/DESIGN);document.body.style.transform=`scale(${scale})`;document.body.style.width=DESIGN+'px';requestAnimationFrame(()=>{document.documentElement.style.height=(document.body.scrollHeight*scale)+'px';});}}
 window.addEventListener('resize',applyScale);applyScale();
 loadDashboard();
 setTimeout(()=>{const ls=document.getElementById('loading-screen');if(ls&&ls.style.display!=='none'){ls.style.display='none';const es=document.getElementById('error-screen');es.style.display='flex';document.getElementById('error-detail').textContent='Timed out after 35s.';}},35000);
 
 function applyBYDFix(){console.log("🔧 Applying BYD Fix (BYD ONLY)...");var d=window._raw2026Rows||[];if(d.length===0){console.warn("⚠️ No data, retry...");setTimeout(applyBYDFix,2000);return;}console.log("📊 Found "+d.length+" rows");var sR=0,bR=0,fS=0,fB=0;d.forEach(function(r){var v=parseFloat(String(r["Total Amount (after SAC)"]||"").replace(/,/g,""))||0;if(v<=0)return;var sp=String(r["Sales Performance"]||"").trim().toLowerCase();var cv=String(r["Total Contract Value"]||"").trim().toLowerCase();var br=String(r["Brand: Brand Name"]||"").trim();var pil=String(r["Pillar"]||"").trim();if(sp==="yes"){sR+=v;if(pil==="Football")fS+=v;}else if(br==="BYD (EV)"&&sp==="no"&&cv==="yes"){bR+=v;if(pil==="Football")fB+=v;}});var tR=sR+bR,fT=fS+fB;console.log("\n📊 Revenue Breakdown:");console.log("  Sales (SP=Yes, all brands): "+Math.round(sR/1e6)+"M");console.log("  BYD Management (BYD only): "+Math.round(bR/1e6)+"M");console.log("  Total: "+Math.round(tR/1e6)+"M");console.log("\n⚽ Football:");console.log("  Sales: "+Math.round(fS/1e6)+"M");console.log("  BYD Mgmt: "+Math.round(fB/1e6)+"M");console.log("  Total: "+Math.round(fT/1e6)+"M");if(Math.round(tR/1e6)===350){console.log("\n✅ CORRECT! Total = 350M");}else{console.warn("\n⚠️ Total ≠ 350M (got "+Math.round(tR/1e6)+"M)");}console.log("\n🔧 Updating DOM...");var c=0;document.querySelectorAll("*").forEach(function(el){var txt=el.textContent;if(el.children.length===0&&txt.trim()==="290M"){var p=el.parentElement,isT=false;for(var i=0;i<5;i++){if(!p)break;if(p.textContent.includes("TOTAL REVENUE YTD")){isT=true;break;}p=p.parentElement;}if(isT){el.textContent="350M";el.style.color="#00a878";el.style.fontWeight="700";console.log("  ✓ Total: 290M→350M");c++;}}});document.querySelectorAll("text, span, div").forEach(function(el){var txt=el.textContent;if(txt.includes("246M")){var p=el.parentElement,isF=false;for(var i=0;i<10;i++){if(!p)break;var pt=p.textContent||"";if(pt.includes("Football")||p.id&&p.id.includes("football")){isF=true;break;}p=p.parentElement;}if(isF&&el.children.length===0){el.textContent=txt.replace("246M","306M");el.style.color="#00a878";el.style.fontWeight="700";console.log("  ✓ Football: 246M→306M");c++;}}});console.log("\n✅ Applied! Updated "+c+" elements");}
+</script>
+
+<script>
+/* ===== Team Overview (Football) ===== */
+function buildFootballOverview(){
+  const src=document.getElementById('page-overview'),root=document.getElementById('fbo-root');
+  if(!src||!root)return;
+  const core=window._ovCore,fb=window._fbData;
+  root.querySelectorAll('canvas').forEach(cv=>{const ch=Chart.getChart(cv);if(ch)ch.destroy();});
+  root.innerHTML='';
+  [...src.children].forEach(e=>root.appendChild(e.cloneNode(true)));
+  const q=sel=>root.querySelector(sel);
+  const $=id=>root.querySelector('#'+id);
+
+  // --- Football FY26/27 numbers (all months incl. 2027, Actual only) ---
+  let fbAct=0,fbBrands=[],fbTarget=0,fbSplit=[],ready=!!(core&&fb);
+  if(ready){
+    fbAct=Object.entries(fb.fbActByContract||{}).filter(([k])=>k.includes('FY26')||k.includes('26/27')).reduce((a,[,v])=>a+v,0);
+    fbBrands=Object.entries(fb.fbFY26Brand||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    const rest=fbAct-fbBrands.reduce((a,[,v])=>a+v,0);
+    if(rest>1)fbBrands.push(['Other / ไม่ระบุ Brand',rest]);
+    fbTarget=core.fbPillarTarget;
+    // split by package group: FA = FAT* · EPL = EPL* · anything else shown separately so the total still ties to FY26/27
+    const grp={FA:0,EPL:0,Other:0};
+    Object.entries(fb.fbFY26Pkg||{}).forEach(([pk,v])=>{const u=pk.toUpperCase().trim();if(u.startsWith('FAT')||u==='FA')grp.FA+=v;else if(u.startsWith('EPL'))grp.EPL+=v;else grp.Other+=v;});
+    fbSplit=[['FA',grp.FA,'#0e2147'],['EPL',grp.EPL,'#a855f7']];
+    if(grp.Other>1)fbSplit.push(['Other',grp.Other,'#94a3b8']);
+  }
+
+  // --- KPI strip: swap Football (calendar-2026 pillar revenue) for Football FY26/27 ---
+  if(ready){
+    const rev=core.totalRevenue-core.fbPillarRev+fbAct,tgt=core.totalTarget;
+    const gap=tgt-rev,attain=tgt>0?rev/tgt*100:0,monthsLeft=Math.max(12-new Date().getMonth(),1),rr=gap/monthsLeft;
+    const set=(id,t)=>{const el=$(id);if(el)el.textContent=t;};
+    set('kpi-revenue',fmtM(rev));set('kpi-attain',fmtPct(attain));set('kpi-runrate',fmtM(rr));set('kpi-gap',fmtM(gap));
+    set('kpi-rr-sub',`THB/month · ${monthsLeft} months left`);set('kpi-rev-badge',`Gap: ${fmtM(gap)}M THB`);
+    set('kpi-attain-badge',attain>=70?'✓ On Track':attain>=50?'⚡ Needs Push':'⚠ Behind Target');
+    const ab=$('kpi-attain-badge');if(ab)ab.className='kpi-badge '+(attain>=70?'up':attain>=50?'warn':'down');
+    let pipe=0;Object.values(fb.byMonthPipeline||{}).forEach(o=>Object.values(o).forEach(v=>pipe+=v||0));
+    const proj=rev+pipe,projGap=tgt-proj,projPct=tgt>0?proj/tgt*100:0;
+    set('kpi-projected',fmtM(proj));
+    const ps=$('kpi-projected-sub');if(ps)ps.innerHTML=`<span style="color:var(--ink)">${fmtM(rev)}M actual</span> <span style="color:var(--ink-faint)">+</span> <span style="color:#c97200">${fmtM(pipe)}M football pipeline</span><br><span style="color:var(--ink-muted);font-size:10px">Target: ${fmtM(tgt)}M · Gap: ${fmtM(projGap)}M</span>`;
+    const pb=$('kpi-projected-badge');if(pb){pb.textContent=fmtPct(projPct)+'% projected';pb.className='kpi-badge '+(projPct>=70?'up':projPct>=50?'warn':'down');}
+  }
+
+  // --- Revenue Forecast by Pillar: drop Football row ---
+  const fc=$('forecast-pillar-card');
+  if(fc){[...fc.querySelectorAll('span')].filter(sp=>sp.textContent.trim()==='Football').forEach(sp=>{const row=sp.closest('div[style*="margin-bottom:12px"]');if(row)row.remove();});}
+
+  // --- Pillar brand cards: drop Football card (6 → 5) ---
+  const pbc=$('pillar-brand-cards');
+  if(pbc){[...pbc.children].forEach(card=>{const t=card.firstElementChild;if(t&&t.textContent.trim()==='Football')card.remove();});pbc.style.gridTemplateColumns='repeat('+Math.max(pbc.children.length,1)+',1fr)';}
+
+  // --- New Football card ---
+  const pct=fbTarget>0?fbAct/fbTarget*100:0,gapF=Math.max(fbTarget-fbAct,0);
+  const pctCol=pct>=65?'var(--green)':pct>=45?'var(--amber)':'var(--red)';
+  const maxB=Math.max(...fbBrands.map(([,v])=>v),1);
+  const fm=v=>v>=1e6?Math.round(v/1e6).toLocaleString()+'M':v>0?Math.round(v/1e3).toLocaleString()+'K':'0';
+  const grpOf=pk=>{const u=String(pk).toUpperCase().trim();return(u.startsWith('FAT')||u==='FA')?'FA':u.startsWith('EPL')?'EPL':'Other';};
+  const TAGC={FA:['#0e2147','rgba(14,33,71,.10)'],EPL:['#7e22ce','rgba(168,85,247,.14)'],Other:['#64748b','rgba(148,163,184,.2)']};
+  const tagsFor=b=>{const m={};Object.entries((fb&&fb.fbFY26BrandPkg&&fb.fbFY26BrandPkg[b])||{}).forEach(([pk,v])=>{const g=grpOf(pk);m[g]=(m[g]||0)+v;});return['FA','EPL','Other'].filter(g=>m[g]>0).map(g=>`<span title="${g}: ${fm(m[g])}" style="font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:1px 6px;border-radius:99px;color:${TAGC[g][0]};background:${TAGC[g][1]};margin-left:4px">${g}</span>`).join('');};
+  const brandRows=fbBrands.length?fbBrands.map(([b,v])=>`<div style="display:flex;align-items:center;gap:10px;margin:6px 0;font-size:11px"><span style="width:230px;display:flex;align-items:center;gap:0;font-weight:600;color:var(--navy);overflow:hidden" title="${b}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b}</span>${tagsFor(b)}</span><span style="flex:1;height:10px;background:rgba(14,33,71,.08);border-radius:4px;overflow:hidden"><i style="display:block;height:100%;width:${(v/maxB*100).toFixed(1)}%;background:#2a9d8f"></i></span><span style="width:56px;text-align:right;font-weight:700;color:var(--navy)">${fm(v)}</span><span style="width:44px;text-align:right;color:var(--ink-muted)">${fbAct>0?(v/fbAct*100).toFixed(1):0}%</span></div>`).join(''):'<div style="padding:12px 0;color:var(--ink-muted);font-size:11px">ไม่มีข้อมูล Brand</div>';
+  const card=document.createElement('div');
+  card.innerHTML=`<div class="sec-hd"><div class="sec-title">⚽ Football · Contract FY26/27</div><div class="sec-sub">Actual revenue (รวมปี 2027) · เทียบ Football Target เดิม</div></div>
+  <div style="display:grid;grid-template-columns:360px 1fr;gap:16px;margin-bottom:28px">
+    <div><div style="background:linear-gradient(135deg,#0e2147,#1a3567);color:#fff;border-radius:12px 12px 0 0;padding:14px 20px;display:flex;justify-content:space-between;align-items:center"><span style="font-family:'Outfit',sans-serif;font-weight:800;letter-spacing:.04em">FOOTBALL · FY26/27</span><span style="font-size:10px;opacity:.7">Actual revenue</span></div>
+    <div class="chart-card" style="border-radius:0 0 12px 12px;border-top:none">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">Revenue (Contract FY26/27)</div>
+      <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:44px;letter-spacing:-.02em;line-height:1;margin:6px 0">${fm(fbAct)}</div>
+      <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;margin:10px 0 8px;background:#e8edf5">${fbSplit.map(([n,v,c])=>`<i style="display:block;height:100%;width:${fbAct>0?(v/fbAct*100).toFixed(1):0}%;background:${c}"></i>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(${fbSplit.length},1fr);gap:6px">${fbSplit.map(([n,v,c])=>`<div style="border-left:3px solid ${c};padding:2px 0 2px 8px"><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">${n}</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--navy);line-height:1.1">${fm(v)}</div><div style="font-size:10px;color:var(--ink-muted)">${fbAct>0?(v/fbAct*100).toFixed(1):0}%</div></div>`).join('')}</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-top:12px">% Achievement vs Target</div>
+      <div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Outfit',sans-serif;font-weight:800;font-size:30px;color:${pctCol}">${fbTarget>0?pct.toFixed(1)+'%':'—'}</span><span style="font-size:11px;color:var(--ink-muted)">${fm(fbAct)} / ${fbTarget>0?fm(fbTarget):'—'}</span></div>
+      <div style="height:8px;background:#e8edf5;border-radius:99px;overflow:hidden;margin:8px 0"><i style="display:block;height:100%;width:${Math.min(pct,100).toFixed(1)}%;border-radius:99px;background:${pctCol}"></i></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;margin-top:12px">
+        <div style="background:var(--surface-2);border-radius:8px;padding:8px 4px"><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">Target</span><b style="display:block;font-family:'Outfit',sans-serif;font-size:15px">${fbTarget>0?fm(fbTarget):'—'}</b></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:8px 4px"><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">Gap</span><b style="display:block;font-family:'Outfit',sans-serif;font-size:15px">${fbTarget>0?fm(gapF):'—'}</b></div>
+        <div style="background:var(--surface-2);border-radius:8px;padding:8px 4px"><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">Brands</span><b style="display:block;font-family:'Outfit',sans-serif;font-size:15px">${fbBrands.filter(([b])=>!b.startsWith('Other /')).length}</b></div>
+      </div></div></div>
+    <div class="chart-card"><div style="display:flex;justify-content:space-between;align-items:baseline"><div><div class="chart-card-title">Revenue by Brand · FY26/27</div><div class="chart-card-sub">รวม = ${fm(fbAct)} · เรียงจากมากไปน้อย</div></div><span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted)">Brand · Revenue · % of total</span></div>
+      ${brandRows}
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:9px;margin-top:10px;font-size:13px;font-weight:800;color:var(--navy)"><span>Total</span><span>${fm(fbAct)}</span></div></div>
+  </div>`;
+  const anchor=pbc||q('.charts-2');
+  if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(card,anchor.nextSibling);
+
+  // --- Re-create Chart.js charts on the copies; Football removed from the pillar bar chart ---
+  root.querySelectorAll('canvas').forEach(cv=>{
+    if(!cv.id)return;const srcCv=src.querySelector('#'+cv.id);const ch=srcCv&&Chart.getChart(srcCv);if(!ch)return;
+    try{
+      let labels=ch.data.labels,datasets=ch.data.datasets.map(d=>({...d}));
+      if(cv.id==='chartPillarOverview'){
+        const keep=labels.map((l,i)=>l!=='Football'?i:-1).filter(i=>i>=0);
+        labels=keep.map(i=>labels[i]);
+        datasets=datasets.map(d=>{const o={...d};['data','backgroundColor'].forEach(k=>{if(Array.isArray(o[k]))o[k]=keep.map(i=>o[k][i]);});return o;});
+      }
+      new Chart(cv,{type:ch.config.type,data:{labels,datasets},options:ch.config.options,plugins:ch.config.plugins||[]});
+    }catch(e){console.warn('Football page: chart copy failed',cv.id,e);}
+  });
+}
+</script>
+
+<script>
+/* ===== Team Overview (Revise) ===== */
+function buildReviseOverview(){
+  // 1) Team Scorecards / Sales Activity draft (placeholders only)
+  const memberCard=(name,tbd,agency)=>`<div class="rv-card rv-mc"><span class="rv-rank">${agency?'AGENCY':'RANK —'}</span><div class="nm">${name}${tbd?'<span class="rv-tbd">รอ Target</span>':''}</div><div class="rev">00.0M</div><div class="sub">Target 00M · Gap 00M</div><div class="rv-bar"><i></i></div><div class="rv-pct">00%</div><div class="rv-ph" style="height:62px">Revenue by Pillar</div><div class="rv-ph" style="height:56px">Quarterly Q1–Q4</div></div>`;
+  const k=document.getElementById('rv-kate'),p=document.getElementById('rv-proud');
+  if(k)k.innerHTML=['Ink','Petch','Yok'].map(n=>memberCard(n,true,false)).join('');
+  if(p)p.innerHTML=['Nay','Bell','Pond','Som'].map(n=>memberCard(n,true,n==='Pond')).join('');
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const TYPES=['Call & Email','Meeting w/ mgmt','Meeting w/o mgmt'];
+  const actCard=(n,sum)=>`<div class="rv-card rv-act ${sum?'sum':''}"><div class="t"><span>${n}</span><span class="rv-lbl">${sum?'TEAM TOTAL':'YTD 00'}</span></div><div class="rv-hm rv-hm-m">${MON.map(m=>`<span>${m}</span>`).join('')}</div>${TYPES.map(t=>`<div class="rv-hm-l">${t}</div><div class="rv-hm">${'<span></span>'.repeat(12)}</div>`).join('')}</div>`;
+  const TEAMS=[['TEAM KATE','Team Kate',['Ink','Petch','Yok']],['TEAM PROUD','Team Proud',['Nay','Bell','Pond','Som']]];
+  const act=document.getElementById('rv-activity');
+  if(act)act.innerHTML=TEAMS.map(([h,tn,ms])=>`<div class="rv-act-team"><div class="rv-act-hd"><b>${h}</b><span class="rv-lbl">${ms.length} members</span></div><div class="rv-act-grid">${actCard(tn+' · รวม',true)}${ms.map(m=>actCard(m,false)).join('')}</div></div>`).join('');
+
+  // 2) Duplicate the untouched parts of Team Overview (everything except Individual Scorecards + Sales Activity)
+  const src=document.getElementById('page-overview'),top=document.getElementById('rv-top'),bottom=document.getElementById('rv-bottom');
+  if(!src||!top||!bottom)return;
+  [top,bottom].forEach(c=>c.querySelectorAll('canvas').forEach(cv=>{const ch=Chart.getChart(cv);if(ch)ch.destroy();}));
+  top.innerHTML='';bottom.innerHTML='';
+  const kids=[...src.children];
+  const iSc=kids.findIndex(e=>e.classList.contains('sec-hd')&&/Individual Scorecards/.test(e.textContent));
+  const iAct=kids.findIndex(e=>e.querySelector&&e.querySelector('#sales-activity-cards'));
+  if(iSc<0||iAct<0)return;
+  kids.slice(0,iSc).forEach(e=>top.appendChild(e.cloneNode(true)));
+  kids.slice(iAct+1).forEach(e=>bottom.appendChild(e.cloneNode(true)));
+  // re-create the Chart.js charts on the copied canvases (same type/data/options/plugins as the originals)
+  [top,bottom].forEach(c=>c.querySelectorAll('canvas').forEach(cv=>{
+    if(!cv.id)return;const srcCv=src.querySelector('#'+cv.id);const ch=srcCv&&Chart.getChart(srcCv);if(!ch)return;
+    try{new Chart(cv,{type:ch.config.type,data:{labels:ch.data.labels,datasets:ch.data.datasets.map(d=>({...d}))},options:ch.config.options,plugins:ch.config.plugins||[]});}catch(e){console.warn('Revise: chart copy failed',cv.id,e);}
+  }));
+}
 </script>
 
 <script>
