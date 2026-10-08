@@ -167,8 +167,8 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 <div class="nav-scroll-wrap at-start" id="nav-scroll-wrap">
   <button class="nav-scroll-btn left hidden" id="nav-btn-left" onclick="navScroll(-1)" aria-label="Scroll left">‹</button>
   <div class="nav-bar" id="nav-bar">
-    <div class="nav-tab active" onclick="showPage('overview',this)">📊 &nbsp;Team Overview</div>
-    <div class="nav-tab" onclick="showPage('overviewFb',this)">⚽ &nbsp;Team Overview (Football)</div>
+    <div class="nav-tab active" onclick="showPage('overview',this)">📊 &nbsp;Team Overview (Calendar)</div>
+    <div class="nav-tab" onclick="showPage('overviewFb',this)">📑 &nbsp;Team Overview (Contract)</div>
     <div class="nav-tab wip-tab" onclick="showPage('overview2',this)">📊 &nbsp;Team Overview (Revise)</div>
     <div class="nav-tab" onclick="showPage('yoy',this)">📈 &nbsp;YoY 2026 vs 2025</div>
     <div class="nav-tab" onclick="showPage('detail',this)">🔍 &nbsp;Revenue Detail</div>
@@ -323,7 +323,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 </div>
 
 <div class="page" id="page-overviewFb">
-  <div class="rv-banner" style="background:var(--navy-soft);border-color:var(--border);color:var(--ink-mid)"><b>Team Overview (Football)</b> — เหมือนหน้า Team Overview ทุกอย่าง แต่แยก Football ออกจาก Revenue by Pillar และนับ Football เฉพาะ Contract FY26/27 (ใช้ยอดนี้ใน KPI ด้านบนแทนยอด Football เดิม)</div>
+  <div class="rv-banner" style="background:var(--navy-soft);border-color:var(--border);color:var(--ink-mid)"><b>Team Overview (Contract)</b> — เหมือนหน้า Team Overview (Calendar) ทุกอย่าง แต่ Football ใช้ยอด Contract FY26/27 แทนยอดเดิม (ใน KPI, Revenue by Pillar และ Forecast) และมี card Football แยกด้านล่าง</div>
   <div id="fbo-root"></div>
 </div>
 
@@ -721,7 +721,7 @@ async function loadDashboard(){
       allPils.sort((a,b)=>{const ia=PIL_ORDER.indexOf(a),ib=PIL_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
       allPils.sort((a,b)=>{const ia=PIL_ORDER.indexOf(a),ib=PIL_ORDER.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
       const rows=allPils.map(pil=>{
-        const actual=(byPillar[pil]||0)+(pil==='eSports & Game'?(byPillar['eSports & Games']||0):(pil==='eSports & Games'?(byPillar['eSports & Game']||0):0));
+        const actual=(window._fcActualOverride&&window._fcActualOverride[pil]!=null)?window._fcActualOverride[pil]:(byPillar[pil]||0)+(pil==='eSports & Game'?(byPillar['eSports & Games']||0):(pil==='eSports & Games'?(byPillar['eSports & Game']||0):0));
         const pipeline=(pipe[pil]||0)+(pil==='eSports & Game'?(pipe['eSports & Games']||0):(pil==='eSports & Games'?(pipe['eSports & Game']||0):0));
         const target=targetByPillar[pil]||0;
         const projected=actual+pipeline;
@@ -2249,7 +2249,11 @@ function buildFootballOverview(){
 
   // --- Revenue Forecast by Pillar: drop Football row ---
   const fc=$('forecast-pillar-card');
-  if(fc){[...fc.querySelectorAll('span')].filter(sp=>sp.textContent.trim()==='Football').forEach(sp=>{const row=sp.closest('div[style*="margin-bottom:12px"]');if(row)row.remove();});}
+  if(fc&&ready&&typeof window._reRenderForecast==='function'){
+    const origFc=src.querySelector('#forecast-pillar-card');
+    window._fcActualOverride={Football:fbAct};
+    try{window._reRenderForecast();fc.innerHTML=origFc.innerHTML;}finally{delete window._fcActualOverride;window._reRenderForecast();}
+  }
 
   // --- Pillar brand cards: drop Football card (6 → 5) ---
   const pbc=$('pillar-brand-cards');
@@ -2293,10 +2297,9 @@ function buildFootballOverview(){
     if(!cv.id)return;const srcCv=src.querySelector('#'+cv.id);const ch=srcCv&&Chart.getChart(srcCv);if(!ch)return;
     try{
       let labels=ch.data.labels,datasets=ch.data.datasets.map(d=>({...d}));
-      if(cv.id==='chartPillarOverview'){
-        const keep=labels.map((l,i)=>l!=='Football'?i:-1).filter(i=>i>=0);
-        labels=keep.map(i=>labels[i]);
-        datasets=datasets.map(d=>{const o={...d};['data','backgroundColor'].forEach(k=>{if(Array.isArray(o[k]))o[k]=keep.map(i=>o[k][i]);});return o;});
+      if(cv.id==='chartPillarOverview'&&ready){
+        const fi=labels.indexOf('Football');
+        if(fi>=0)datasets=datasets.map(d=>{if(d.label==='YTD Revenue'&&Array.isArray(d.data)){const o={...d};o.data=d.data.slice();o.data[fi]=fbAct/1e6;return o;}return d;});
       }
       new Chart(cv,{type:ch.config.type,data:{labels,datasets},options:ch.config.options,plugins:ch.config.plugins||[]});
     }catch(e){console.warn('Football page: chart copy failed',cv.id,e);}
