@@ -52,6 +52,10 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 .kpi-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:7px;letter-spacing:.04em;text-transform:uppercase}
 .kpi-badge.up{background:var(--green-dim);color:var(--green)}.kpi-badge.warn{background:var(--amber-dim);color:var(--amber)}.kpi-badge.down{background:var(--red-dim);color:var(--red)}.kpi-badge.neutral{background:var(--navy-soft,#e8edf5);color:var(--ink-mid)}
 .sec-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+#page-pipelineRevise .sec-hd{margin-top:44px;margin-bottom:16px}
+#page-pipelineRevise>.sec-hd:first-child{margin-top:0}
+#page-pipelineRevise #prv-filters+.sec-hd{margin-top:36px}
+#page-pipelineRevise .sec-hd[style*="margin-top:28px"]{margin-top:32px}
 .sec-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--navy)}
 .sec-sub{font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.08em}
 .charts-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
@@ -176,6 +180,7 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 .prv-mx{display:grid;grid-template-columns:150px repeat(6,1fr)}
 .prv-mx>div{border-bottom:1px solid var(--border);border-right:1px solid var(--border);padding:7px 8px;min-width:0}
 .prv-mx .h{background:#0e2147;color:rgba(255,255,255,.7);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-color:rgba(255,255,255,.1)}
+#prv-matrix .prv-mx>.h:first-child{background:#e8edf5;color:#0e2147;border-bottom:3px solid #0e2147}
 .prv-mx .tl{grid-column:1/-1;color:#fff;font-family:'Outfit',sans-serif;font-weight:800;font-size:12.5px;display:flex;justify-content:space-between;cursor:pointer;padding:8px 12px;border-right:none}.prv-mx .tl span{font-weight:500;font-size:10.5px;opacity:.8;font-family:'Manrope',sans-serif}
 .prv-mx .who{background:#f7f9fc}.prv-mx .who b{font-family:'Outfit',sans-serif;font-size:13px;display:block}.prv-mx .who small{font-size:9.5px;color:var(--ink-muted)}
 .prv-chp{display:flex;align-items:center;gap:5px;font-size:10px;border-left:3px solid;border-radius:3px;padding:2px 6px;margin-bottom:3px;background:#fff;box-shadow:0 0 0 .5px var(--border)}
@@ -225,9 +230,13 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 .prv-chp .ptag{flex:0 1 auto!important;min-width:0;max-width:88px;overflow:hidden;text-overflow:ellipsis}
 
 .prv-atr .prv-sbar{width:100%;max-width:130px;min-width:60px}
+#prv-tbl .prv-th{background:#0b5c7a;color:rgba(255,255,255,.8)}
+.prv-tr[style*="0a4a63"] .prv-ce2 b,.prv-tr[style*="0a4a63"] .prv-ce2 span{color:#fff!important}.prv-tr[style*="0a4a63"] .prv-ce2 em{color:rgba(255,255,255,.65)}
+.prv-tr[style*="0a4a63"]>div{border-left-color:rgba(255,255,255,.15)!important}
 .prv-tr>div:not(:first-child){border-left:1px solid var(--border)!important}
 .prv-tr.prv-th>div:not(:first-child){border-left:1px solid rgba(255,255,255,.18)!important}
 .prv-tr[style*="0e2147"]>div:not(:first-child){border-left:1px solid rgba(255,255,255,.22)!important}
+#prv-act .prv-ovl{background:#0e2147;color:#fff}#prv-act .prv-ovl>div{color:#fff!important;border-color:rgba(255,255,255,.15)!important}
 .prv-tr.prv-tt:not(.prv-th)>div:not(:first-child){border-left-color:#c9d3e3!important}
 /* ===== Pipeline Direct vs Agency ===== */
 .pag-sum{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:14px}
@@ -261,6 +270,30 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
 .pag-fl .pag-bc{display:inline-block;font-size:9.5px;padding:0 5px;border-left-width:2px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .pag-fl .prv-mo{font-size:9.5px;white-space:nowrap}
 .pag-ar>div{padding:4px 8px}
+.pag-sla{margin:-2px 0 14px}
+.pag-sla .sl{display:inline-block;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:11px;max-width:100%}
+.pag-sla table{border-collapse:collapse}.pag-sla th,.pag-sla td{padding:5px 14px;text-align:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border);white-space:nowrap}
+.pag-sla th:first-child,.pag-sla td:first-child{border-left:none;text-align:left}
+.pag-sla thead th{background:#f7f9fc;font-size:10px;font-weight:700;color:var(--ink);border-bottom:3px solid var(--c)}
+.pag-sla thead th:first-child{border-bottom-color:var(--border);color:var(--ink-muted);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.pag-sla tbody tr:last-child td{border-bottom:none}.pag-sla td.rl{font-weight:800;font-size:10.5px}.pag-sla td.rl i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px}
+.pag-sla .n{font-size:10px;color:var(--ink-muted);margin-top:6px}
+.pcd-team{display:flex;justify-content:space-between;align-items:center;color:#fff;font-family:'Outfit',sans-serif;font-weight:800;font-size:12.5px;padding:8px 14px;border-radius:10px;margin:18px 0 10px;cursor:pointer}.pcd-team:first-child{margin-top:0}.pcd-team .m{font-weight:500;font-size:11px;opacity:.85}
+.pcd .pag-bc em{font-style:normal;font-weight:700;font-size:9.5px;margin-left:5px;color:var(--sc,#1d9e75)}.pcd .pag-bc .pe{margin-right:4px;font-size:10px}
+.pcd .pag-bc.Overdue em{color:#e24b4a}.pcd .pag-bc.Watch em{color:#ba7517}
+.pag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.pcd{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--c);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow,none)}
+.pcd.empty{opacity:.55}
+.pcd .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}.pcd .hd b{font-family:'Outfit',sans-serif;font-size:14.5px}.pcd .hd span{font-size:11px;color:var(--ink-muted)}.pcd .rv{font-weight:800;color:var(--ink)}
+.pcd-ps{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 8px}
+.pcd-p{display:inline-flex;gap:4px;align-items:center;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--c) 13%,#fff);color:color-mix(in srgb,var(--c) 80%,#0e2147);border:1px solid color-mix(in srgb,var(--c) 28%,#fff)}.pcd-p b{font-size:11px}
+.pcd .rows{border-top:1px dashed var(--border);padding-top:8px}
+.pcd .r{display:flex;gap:4px;align-items:flex-start;margin-bottom:3px;line-height:1.9}
+.pcd .lab{flex:0 0 96px;font-size:9px;font-weight:800;letter-spacing:.08em;white-space:nowrap}
+.pcd .v{flex:1;min-width:0}
+.pcd .pag-bc{display:inline-block;font-size:10.5px;padding:0 6px;border-left-width:3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-weight:600;margin:1px 3px 1px 0}
+.pcd-more{color:#00a0c0;font-weight:700;font-size:10.5px;cursor:pointer;white-space:nowrap}
+.pcd .ow{margin-top:8px}
 .pag-ar.sub>div:not(:first-child):not(.pag-n0){background:#fff}
 
 .pag-ar>div{align-content:flex-start}
@@ -483,18 +516,17 @@ body{overflow-x:hidden;font-family:'Manrope',sans-serif;background:var(--bg);col
   <div class="sec-hd"><div class="sec-title">Pipeline Overview by Team</div><div class="sec-sub">Brands · value by status · กดชื่อทีมเพื่อพับ</div></div>
   <div class="prv-card prv-tbl" id="prv-tbl"></div>
   <div class="sec-hd"><div class="sec-title">Sales Activeness</div><div class="sec-sub">ความ active ในการติดต่อ Brand · อิงกฎ SLA</div></div>
+  <div id="pag-sla" class="pag-sla"></div>
   <div class="prv-card prv-tbl" id="prv-act"></div>
   <div style="font-size:10.5px;color:var(--ink-muted);margin:6px 2px;line-height:1.7">แถบสี = สัดส่วน <b style="color:#1d9e75">On Track</b> · <b style="color:#ba7517">Watch List</b> · <b style="color:#e24b4a">Overdue</b> · Avg days = วันเฉลี่ยที่ Brand อยู่ในสถานะปัจจุบัน · Longest = Brand ที่ค้างนานสุด</div>
-  <div class="sec-hd"><div class="sec-title">Brand Status Tracker</div><div class="sec-sub">Brand Roster · คน × สถานะ · วันในสถานะ · SLA</div></div>
-  <div id="prv-matrix" class="prv-card" style="overflow:hidden"></div>
-  <div style="font-size:10.5px;color:var(--ink-muted);margin:8px 2px;line-height:1.7">สีขอบซ้ายและตัวเลขวัน = ระดับ SLA · แต่ละช่องเรียง Overdue ก่อน แล้วตามด้วยวันค้างมาก→น้อย · แสดง 4 Brand ต่อช่อง ที่เหลือพับเป็น "+N อีก" · แถวที่ใช้ชื่อ Kate/Proud (หัวหน้าทีม) ไม่นับเป็น Pipeline</div>
-  <div class="sec-hd"><div class="sec-title">Pipeline: Direct vs Agency</div><div class="sec-sub">Customer Group · แต่ละ Agency ไปถึง Status ไหนแล้ว</div></div>
+  <div class="sec-hd"><div class="sec-title">Brand Status Tracker</div><div class="sec-sub">Tracks brand contact status and duration in each stage</div></div>
+  <div id="prv-matrix"></div>
+  <div class="sec-hd"><div class="sec-title">Pipeline: Direct vs Agency</div><div class="sec-sub">Pipeline แบ่งตาม Direct vs Agency</div></div>
   <div class="prv-card prv-fbar" id="pag-fb" style="flex-direction:row;flex-wrap:wrap;align-items:center"><span class="prv-lbl">Customer</span><button class="prv-chip on" data-cg="all">All</button><button class="prv-chip" data-cg="direct">Direct</button><button class="prv-chip" data-cg="agency">Agency</button><input id="pag-q" type="search" placeholder="🔍 ค้นหา Agency / Brand…" style="margin-left:10px;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;min-width:220px;font-family:inherit"><span style="margin-left:auto;font-size:10.5px;color:var(--ink-muted)">ใช้ Filter ด้านบนของหน้าร่วมกัน (ทีม / Sales / Pillar / Status / SLA)</span></div>
   <div id="pag-sum" class="pag-sum" style="margin-top:12px"></div>
-  <div class="sec-hd" style="margin-top:28px"><div class="sec-title">Agency Overview</div><div class="sec-sub">1 แถว = 1 Agency · Brand ในแต่ละ Status</div></div>
-  <div class="prv-card prv-tbl" id="pag-ov"></div>
-  <div id="pag-note" style="font-size:10.5px;color:var(--ink-muted);margin:8px 2px;line-height:1.7"></div>
-</div>
+  <div class="sec-hd" style="margin-top:28px"><div class="sec-title">Agency Overview</div><div class="sec-sub">รายชื่อ Brand ภายใต้ Agency ในแต่ละ Status</div></div>
+  <div class="pag-grid" id="pag-ov"></div>
+  </div>
 
 <div class="page" id="page-revopp">
   <div class="rv-banner"><b>Revenue Opportunities</b> — รวบรวมรายชื่อ Lead จากการวิเคราะห์โอกาสทางธุรกิจ (Opportunity Analysis) ที่มีศักยภาพในการสร้างรายได้ใหม่ให้ PBE พร้อมจัดลำดับความสำคัญ (P1–P3) เพื่อให้ทีม Sales เลือกแบรนด์ที่ควรเข้าหาก่อน และติดตามความคืบหน้าของแต่ละ Lead โดยอัปเดตสถานะอัตโนมัติจาก Brand Status Tracker</div>
@@ -2399,7 +2431,23 @@ function navScroll(dir){const bar=document.getElementById('nav-bar');if(bar)bar.
 function refreshData(){const btn=document.getElementById('refresh-btn');if(btn){btn.textContent='↻ Refreshing...';btn.disabled=true;}loadDashboard().finally(()=>{if(btn){btn.textContent='↺ Refresh';btn.disabled=false;}});}
 window._prv=window._prv||{team:new Set(),sp:new Set(),pil:new Set(),st:new Set(),sla:new Set(),collapsed:new Set()};
 window._pag=window._pag||{cg:'all',q:''};
+
+function pcdList(C,chipFn,n){n=n||3;const rest=C.slice(n);
+  return C.slice(0,n).map(chipFn).join('')+rest.map(x=>chipFn(x).replace('<span class="pag-bc','<span style="display:none" class="xtra pag-bc')).join('')+(rest.length?`<span class="pcd-more" data-n="${rest.length}" onclick="pcdToggle(this)">Show more (+${rest.length}) ▾</span>`:'');}
+function pcdToggle(b){const open=b.dataset.o==='1';b.dataset.o=open?'':'1';b.parentNode.querySelectorAll('.xtra').forEach(e=>e.style.display=open?'none':'inline-block');b.textContent=open?`Show more (+${b.dataset.n}) ▾`:'Show less ▴';}
+
+function buildSLATable(){
+  const el=document.getElementById('pag-sla');if(!el)return;
+  const rules=window._slaRules||[];
+  const COLS=[['contacted','Contacted','📞','#00a0c0'],['meeting','Meeting','📅','#c97200'],['proposal','Proposal','📋','#1565c0'],['follow-up','Follow-up','🔄','#3a4f6e']];
+  const ROWS=[['Overdue','Overdue','#e24b4a'],['Watch List','Watch List','#ba7517'],['On Track','On Track','#1d9e75']];
+  const rng=(st,tier)=>{const days=[];for(let d=0;d<=400;d++)if(getSLATier(st,d,rules)===tier)days.push(d);if(!days.length)return'–';
+    const parts=[];let b=days[0],p=b;for(let k=1;k<=days.length;k++){const v=days[k];if(v!==p+1){parts.push([b,p]);b=v;}p=v;}
+    return parts.map(([x,y])=>y>=400?`<b>${x}+</b> days`:(x===y?`<b>${x}</b> days`:`<b>${x}–${y}</b> days`)).join(', ');};
+  el.innerHTML=`<div class="sl"><table><thead><tr><th>SLA · Days in Status</th>${COLS.map(c=>`<th style="--c:${c[3]}">${c[2]} ${c[1]}</th>`).join('')}</tr></thead><tbody>${ROWS.map(r=>`<tr style="background:color-mix(in srgb,${r[2]} 5%,#fff)"><td class="rl" style="color:${r[2]}"><i style="background:${r[2]}"></i>${r[1]}</td>${COLS.map(c=>`<td style="color:${r[2]}">${rng(c[0],r[0])}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="n">Close deal / Postponed are not counted in SLA</div>`;
+}
 function buildPipelineAgency(){
+  try{buildSLATable();}catch(e){console.error('[SLA]',e);}
   const $=id=>document.getElementById(id);if(!$('pag-sum'))return;
   const S=window._prv||{team:new Set(),sp:new Set(),pil:new Set(),st:new Set(),sla:new Set()};const G=window._pag=window._pag||{cg:'all',q:''};
   const ALL=['Ink','Petch','Yok','Nay','Bell','Pond','Som'],KATE=['Ink','Petch','Yok'];
@@ -2467,10 +2515,16 @@ function buildPipelineAgency(){
       if(!names)return`<div class="pag-c"><b class="pag-n" style="color:${SC[s]}">${C.length}</b></div>`;
       return`<div class="pag-c"><div class="pag-fl"><b class="pag-cnt" style="color:${SC[s]}">${C.length}</b>${C.slice(0,6).map(chp).join('')}${C.slice(6).map(x=>chp(x).replace('class="pag-bc','style="display:none" class="pag-bc xtra')).join('')}${C.length>6?`<span class="prv-mo">+${C.length-6} ▾</span>`:''}</div></div>`}).join('');
     return`<div class="pag-ar ${cls}"><div class="nm">${esc(nm)}</div><div class="pag-n0">${a.n||''}</div><div class="pag-n0">${a.n?fr(a.v):''}</div>${cells}<div>${own(L)}</div><div>${L.length?`<div class="prv-sbar">${sb(L)}</div>`:''}</div></div>`};
-  const hdr=`<div class="pag-ar prv-th"><div>Customer Group</div><div>Brands</div><div>Revenue</div>${ST.map(s=>`<div style="border-bottom:3px solid ${SC[s]}">${SI[s]} ${SL[s]}</div>`).join('')}<div>Sales</div><div>SLA</div></div>`;
-  $('pag-ov').innerHTML=hdr+(G.cg==='agency'?'':row('DIRECT',D,'grp',true))+(G.cg==='direct'?'':row('AGENCY รวม',A,'grp',false)+ags.map(o=>row(o.g,o.L,'sub',true)).join(''));
-  $('pag-ov').querySelectorAll('.prv-mo').forEach(b=>b.onclick=()=>{b.parentNode.querySelectorAll('.xtra').forEach(e=>e.style.display='inline-block');b.remove()});
-  const nb=$('pag-note');if(nb)nb.textContent=`ข้อมูลจาก [For DB] Brand Status Tracker (คอลัมน์ Customer Group) · เรียง Agency ตามจำนวน Brand มาก → น้อย (Agency ที่ยังไม่มี Brand แสดงเป็นแถวว่าง) · สีขอบซ้ายของชื่อ Brand = ระดับ SLA${blankCG?` · มี ${blankCG} แถวที่ไม่ระบุ Customer Group (ไม่นับในส่วนนี้)`:''}`;
+  const SCN={'close deal':'--cd','follow-up':'--fu'};
+  const card2=(nm,L,col,sub)=>{
+    if(!L.length)return`<div class="pcd empty" style="--c:#c9d3e3"><div class="hd"><b>${esc(nm)}</b><span>ยังไม่มี Brand</span></div></div>`;
+    const a=agg(L);
+    const pills=ST.map((s,k)=>a.per[k]?`<span class="pcd-p" style="--c:${SC[s]}">${SI[s]} <b>${a.per[k]}</b></span>`:'').join('');
+    const rows=ST.map(s=>{const C=L.filter(x=>x.st==s).sort(sf);if(!C.length)return'';
+      return`<div class="r"><span class="lab" style="color:${SC[s]}">${SI[s]} ${SL[s].toUpperCase()}</span><span class="v">${pcdList(C,chp)}</span></div>`}).join('');
+    return`<div class="pcd" style="--c:${col}"><div class="hd"><b>${esc(nm)}</b><span><span class="rv">${fr(a.v)}</span> · ${a.n} brands</span></div><div class="prv-sbar">${sb(L)}</div><div class="pcd-ps">${pills}</div><div class="rows">${rows}</div><div class="ow">${own(L)}</div></div>`};
+  const showD=G.cg!=='agency',showA=G.cg!=='direct';
+  $('pag-ov').innerHTML=(showD?card2('DIRECT',D,'#0e7c9e'):'')+(showA?ags.map(o=>card2(o.g,o.L,'#7b5ea7')).join(''):'');
 }
 
 function buildRevOpp(){
@@ -2685,7 +2739,7 @@ function buildPipelineRevise(){
   // ---- team table
   const cell=p=>p[0]?`<div class="prv-ce2"><b>${p[0]}</b><em>${p[0]>1?'brands':'brand'}</em><span>${fr(p[1])}</span></div>`:`<div class="prv-ce2 z">–</div>`;
   const trow=(cls,A,nm)=>`<div class="prv-tr ${cls}">${nm}${A.per.map(cell).join('')}${cell(A.tot)}</div>`;
-  $('prv-tbl').innerHTML=`<div class="prv-tr prv-th"><div>Team / Sales</div>${ST.map(s=>`<div style="border-bottom:3px solid ${SC[s]}">${SI[s]} ${SL[s]}</div>`).join('')}<div>Total</div></div>`+visTeams.map(t=>{const col=S.collapsed.has(t.key);return`<div data-tt="${t.key}" style="display:contents">`+trow('prv-tt" data-tt="'+t.key,agg(f.filter(x=>t.vm.includes(x.sp))),`<div class="nm"><span style="font-size:9px;color:var(--ink-muted)">${col?'▸':'▾'}</span><span class="dot" style="background:${t.c}"></span>${t.n}</div>`)+(col?'':t.vm.map(m=>trow('prv-tm1',agg(f.filter(x=>x.sp===m)),`<div class="nm">${m}</div>`)).join(''))+'</div>'}).join('')+trow('prv-tt" style="background:#0e2147;color:#fff',AO,'<div class="nm">OVERALL</div>');
+  $('prv-tbl').innerHTML=`<div class="prv-tr prv-th"><div>Team / Sales</div>${ST.map(s=>`<div style="border-bottom:3px solid ${SC[s]}">${SI[s]} ${SL[s]}</div>`).join('')}<div>Total</div></div>`+visTeams.map(t=>{const col=S.collapsed.has(t.key);return`<div data-tt="${t.key}" style="display:contents">`+trow('prv-tt" data-tt="'+t.key,agg(f.filter(x=>t.vm.includes(x.sp))),`<div class="nm"><span style="font-size:9px;color:var(--ink-muted)">${col?'▸':'▾'}</span><span class="dot" style="background:${t.c}"></span>${t.n}</div>`)+(col?'':t.vm.map(m=>trow('prv-tm1',agg(f.filter(x=>x.sp===m)),`<div class="nm">${m}</div>`)).join(''))+'</div>'}).join('')+trow('prv-tt" style="background:#0a4a63;color:#fff',AO,'<div class="nm">OVERALL</div>');
   $('prv-tbl').querySelectorAll('.prv-tt[data-tt]').forEach(el=>el.onclick=()=>{const k=el.dataset.tt;S.collapsed.has(k)?S.collapsed.delete(k):S.collapsed.add(k);buildPipelineRevise();});
   // ---- activeness
   const tc=L=>L.length?['On','Watch','Overdue'].map(k=>`<i style="width:${L.filter(x=>x.tier==k).length/L.length*100}%;background:${TCOL[k]}"></i>`).join(''):'';
@@ -2693,17 +2747,20 @@ function buildPipelineRevise(){
   const arow=(nm,cls,L,sub)=>{if(!L.length)return`<div class="prv-atr ${cls}"><div class="nm" style="${nmst(sub)}">${nm}</div><div>0</div><div style="color:var(--ink-faint)">–</div><div>–</div><div>–</div><div>–</div><div>–</div><div>–</div></div>`;
     const on=L.filter(x=>x.tier=='On').length,od=L.filter(x=>x.tier=='Overdue').length,w=L.filter(x=>x.tier=='Watch').length,lg=L.reduce((a,b)=>b.days>a.days?b:a);
     return`<div class="prv-atr ${cls}"><div class="nm" style="${nmst(sub)}">${nm}</div><div class="prv-ce">${new Set(L.map(x=>x.brand)).size}</div><div><div class="prv-sbar">${tc(L)}</div></div><div class="prv-ce" style="color:#1d9e75">${on}</div><div class="prv-ce" style="color:#ba7517">${w}</div><div class="prv-ce" style="color:#e24b4a">${od}</div><div class="prv-ce">${Math.round(L.reduce((q,x)=>q+x.days,0)/L.length)}d</div><div class="prv-ce" title="${lg.brand}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lg.days}d · ${lg.brand}</div></div>`};
-  $('prv-act').innerHTML=`<div class="prv-atr prv-th"><div>Team / Sales</div><div>Brands</div><div>On Track · Watch · Overdue</div><div style="color:#7fe0bd">On Track</div><div style="color:#f1c27a">Watch</div><div style="color:#f19a99">Overdue</div><div>Avg days</div><div>Longest</div></div>`+visTeams.map(t=>arow(t.n,'prv-tt',dedupe(f.filter(x=>t.vm.includes(x.sp))),false)+t.vm.map(m=>arow(m,'prv-tm1',f.filter(x=>x.sp===m),true)).join('')).join('')+arow('OVERALL','prv-tt',dedupe(f),false);
+  $('prv-act').innerHTML=`<div class="prv-atr prv-th"><div>Team / Sales</div><div>Brands</div><div>On Track · Watch · Overdue</div><div style="color:#7fe0bd">On Track</div><div style="color:#f1c27a">Watch</div><div style="color:#f19a99">Overdue</div><div>Avg days</div><div>Longest</div></div>`+visTeams.map(t=>arow(t.n,'prv-tt',dedupe(f.filter(x=>t.vm.includes(x.sp))),false)+t.vm.map(m=>arow(m,'prv-tm1',f.filter(x=>x.sp===m),true)).join('')).join('')+arow('OVERALL','prv-tt prv-ovl',dedupe(f),false);
   // ---- matrix
   const chp=x=>`<div class="prv-chp ${x.tier}" title="${x.pil||'-'} · ${fr(x.val)}"><span class="bn">${x.brand}</span>${x.pil?`<span class="ptag" style="--pc:${PC[x.pil]}">${PE[x.pil]} ${x.pil}</span>`:''}<span class="d">${x.days}d</span></div>`;
   const ord={Overdue:0,Watch:1,On:2},sf=(a,b)=>ord[a.tier]-ord[b.tier]||b.days-a.days;
-  let mh='<div class="prv-mx"><div class="h">Sales</div>'+ST.map(s=>`<div class="h" style="background:${SC[s]};color:#fff;border-color:rgba(255,255,255,.25)">${SI[s]} ${SL[s]}</div>`).join('');
-  visTeams.forEach(t=>{const L0=dedupe(f.filter(x=>t.vm.includes(x.sp)));mh+=`<div class="tl" data-tt="${t.key}" style="background:${t.c}">▾ ${t.n}<span>${new Set(L0.map(x=>x.brand)).size} brands · ${L0.filter(x=>x.tier=='Overdue').length} overdue</span></div>`;
-    t.vm.forEach(m=>{const L=f.filter(x=>x.sp===m);mh+=`<div class="who" data-m="${t.key}"><b>${m}</b><small>${new Set(L.map(x=>x.brand)).size} brands</small><div class="prv-sbar" style="margin-top:5px;height:6px">${tc(L)}</div></div>`;
-      ST.forEach(s=>{const C=L.filter(x=>x.st===s).sort(sf);mh+=`<div data-m="${t.key}"><div class="prv-cnt">${C.length||'–'}</div>${C.slice(0,4).map(chp).join('')}<div>${C.slice(4).map(x=>chp(x).replace('class="prv-chp','style="display:none" class="prv-chp xtra')).join('')}${C.length>4?`<span class="prv-mo">+${C.length-4} อีก ▾</span>`:''}</div></div>`;});});});
-  $('prv-matrix').innerHTML=mh+'</div>';
-  $('prv-matrix').querySelectorAll('.prv-mo').forEach(b=>b.onclick=()=>{b.parentNode.querySelectorAll('.xtra').forEach(e=>e.style.display='inline-block');b.remove()});
-  $('prv-matrix').querySelectorAll('.tl').forEach(el=>el.onclick=()=>{const k=el.dataset.tt,hide=!el.dataset.c;el.dataset.c=hide?1:'';$('prv-matrix').querySelectorAll('[data-m="'+k+'"]').forEach(e=>e.style.display=hide?'none':'')});
+  const chk=x=>`<span class="pag-bc ${x.tier}" title="${x.brand} · ${x.pil||'-'} · ${x.days} days · ${fr(x.val)}">${x.pil?`<span class="pe">${PE[x.pil]}</span>`:''}${x.brand}<em>${x.days}d</em></span>`;
+  const scard=(m,L,col)=>{const nb=new Set(L.map(x=>x.brand)).size,od=L.filter(x=>x.tier=='Overdue').length;
+    const pills=ST.map(s=>{const c=L.filter(x=>x.st===s).length;return c?`<span class="pcd-p" style="--c:${SC[s]}">${SI[s]} <b>${c}</b></span>`:''}).join('');
+    const rows=ST.map(s=>{const C=L.filter(x=>x.st===s).sort(sf);return C.length?`<div class="r"><span class="lab" style="color:${SC[s]}">${SI[s]} ${SL[s].toUpperCase()}</span><span class="v">${pcdList(C,chk)}</span></div>`:''}).join('');
+    return`<div class="pcd" style="--c:${col}"><div class="hd"><b>${m}</b><span>${nb} brands${od?` · <b style="color:#e24b4a;font-size:11px;font-family:inherit">${od} overdue</b>`:''}</span></div>${L.length?`<div class="prv-sbar">${tc(L)}</div><div class="pcd-ps">${pills}</div><div class="rows">${rows}</div>`:'<div style="color:var(--ink-faint);font-size:11px">ยังไม่มี Brand</div>'}</div>`};
+  let mh='';
+  visTeams.forEach(t=>{const L0=dedupe(f.filter(x=>t.vm.includes(x.sp)));
+    mh+=`<div class="pcd-team" data-tt="${t.key}" style="background:${t.c}"><span>▾ ${t.n}</span><span class="m">${new Set(L0.map(x=>x.brand)).size} brands · ${L0.filter(x=>x.tier=='Overdue').length} overdue</span></div><div class="pag-grid" data-m="${t.key}">${t.vm.map(m=>scard(m,f.filter(x=>x.sp===m),t.c)).join('')}</div>`;});
+  $('prv-matrix').innerHTML=mh;
+  $('prv-matrix').querySelectorAll('.pcd-team').forEach(el=>el.onclick=()=>{const k=el.dataset.tt,hide=!el.dataset.c;el.dataset.c=hide?1:'';el.firstChild.textContent=(hide?'▸ ':'▾ ')+el.firstChild.textContent.slice(2);$('prv-matrix').querySelectorAll('[data-m="'+k+'"]').forEach(e=>e.style.display=hide?'none':'')});
   try{buildPipelineAgency();}catch(e){console.error('[Agency]',e);}
   const fb=$('pag-fb');if(fb&&!fb.dataset.bound){fb.dataset.bound=1;fb.querySelectorAll('button[data-cg]').forEach(b=>b.onclick=()=>{(window._pag=window._pag||{cg:'all',q:''}).cg=b.dataset.cg;buildPipelineAgency();});$('pag-q').oninput=e=>{(window._pag=window._pag||{cg:'all',q:''}).q=e.target.value;buildPipelineAgency();};}
 }
